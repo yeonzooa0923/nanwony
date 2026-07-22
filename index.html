@@ -106,15 +106,20 @@
                 </div>
                 <!-- Desktop Menu links -->
                 <nav class="hidden lg:flex space-x-1.5 items-center font-bold text-xs tracking-wider uppercase whitespace-nowrap">
-                    <a href="#profile" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">프로필</a>
-                    <a href="#notice" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">공지</a>
-                    <a href="#schedule" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">스케줄</a>
-                    <a href="#pledge" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">API공약</a>
-                    <a href="#fortune" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">오늘의운세</a>
-                    <a href="#homework" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">숙제현황</a>
-                    <a href="#songlist" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">노래책</a>
-                    <a href="#awards" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">수상내역</a>
+                    <a id="nav-link-profile" href="#profile" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">프로필</a>
+                    <a id="nav-link-notice" href="#notice" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">공지</a>
+                    <a id="nav-link-schedule" href="#schedule" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">스케줄</a>
+                    <a id="nav-link-pledge" href="#pledge" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">API공약</a>
+                    <a id="nav-link-fortune" href="#fortune" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">오늘의운세</a>
+                    <a id="nav-link-homework" href="#homework" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">숙제현황</a>
+                    <a id="nav-link-songlist" href="#songlist" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">노래책</a>
+                    <a id="nav-link-awards" href="#awards" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">수상내역</a>
                     
+                    <!-- Admin Section Toggle Button -->
+                    <button id="admin-section-toggle-btn" onclick="openSectionToggleModal()" class="hidden bg-amber-400 hover:bg-amber-500 text-black px-2.5 py-1.5 rounded-xl transition-all font-black text-xs shadow-sm" title="섹션 ON/OFF 설정">
+                        ⚙️ ON/OFF
+                    </button>
+
                     <!-- Theme toggler -->
                     <button id="theme-toggle" class="text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 p-2 rounded-xl transition-colors">
                         <i class="fa-solid fa-moon text-base w-5 h-5 flex items-center justify-center"></i>
@@ -134,14 +139,14 @@
         <!-- Mobile expandable panel -->
         <div id="mobile-menu" class="hidden lg:hidden bg-white/95 dark:bg-brand-dark/95 border-t-2 border-amber-400/30 dark:border-amber-400/40">
             <div class="px-4 pt-2 pb-4 space-y-1.5 font-bold text-sm uppercase">
-                <a href="#profile" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">프로필</a>
-                <a href="#notice" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">공지사항</a>
-                <a href="#schedule" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">스케줄</a>
-                <a href="#pledge" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">API 공약 안내</a>
-                <a href="#fortune" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">오늘의 고양이 운세 🐾</a>
-                <a href="#homework" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">방셀 숙제 현황</a>
-                <a href="#songlist" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">노래책</a>
-                <a href="#awards" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">수상내역</a>
+                <a id="mobile-nav-profile" href="#profile" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">프로필</a>
+                <a id="mobile-nav-notice" href="#notice" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">공지사항</a>
+                <a id="mobile-nav-schedule" href="#schedule" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">스케줄</a>
+                <a id="mobile-nav-pledge" href="#pledge" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">API 공약 안내</a>
+                <a id="mobile-nav-fortune" href="#fortune" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">오늘의 고양이 운세 🐾</a>
+                <a id="mobile-nav-homework" href="#homework" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">방셀 숙제 현황</a>
+                <a id="mobile-nav-songlist" href="#songlist" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">노래책</a>
+                <a id="mobile-nav-awards" href="#awards" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">수상내역</a>
             </div>
         </div>
     </header>
@@ -223,10 +228,10 @@
                 </div>
             </div>
 
-            <!-- Two Column Intro & Anniversary -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Two Column Intro & Anniversary Grid -->
+            <div id="intro-dday-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Introduction Card -->
-                <div class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 transition-colors duration-300 flex flex-col justify-between border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)]">
+                <div id="card-profile-intro" class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 transition-colors duration-300 flex flex-col justify-between border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)]">
                     <div>
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="flex items-center gap-2 text-lg font-bold text-brand-dark dark:text-white">
@@ -242,7 +247,7 @@
                 </div>
 
                 <!-- Anniversary Card -->
-                <div class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 transition-colors duration-300 flex flex-col justify-between border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)]">
+                <div id="card-profile-dday" class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 transition-colors duration-300 flex flex-col justify-between border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)]">
                     <div>
                         <h3 class="flex items-center gap-2 text-lg font-bold text-brand-dark dark:text-white mb-4">
                             🎉 워냥이와 함께한 순간들
@@ -253,7 +258,7 @@
             </div>
 
             <!-- Broadcast Outline Info -->
-            <div class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)] transition-colors">
+            <div id="card-profile-broadcast" class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)] transition-colors">
                 <h3 class="flex items-center gap-2 text-lg font-bold text-brand-dark dark:text-white mb-4">
                     📻 LIVE ON AIR INFO
                 </h3>
@@ -276,7 +281,7 @@
             </div>
 
             <!-- Likes & Dislikes -->
-            <div class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)] transition-colors">
+            <div id="card-profile-likes" class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)] transition-colors">
                 <h3 class="flex items-center gap-2 text-lg font-bold text-brand-dark dark:text-white mb-4">
                     💛 LOVE & HATE LIST
                 </h3>
@@ -294,7 +299,7 @@
         </section>
 
         <!-- 2. Notice & Schedule Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="notice-schedule-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Notice Section -->
             <section id="notice" class="scroll-mt-20">
                 <div class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 h-full border-2 border-black dark:border-amber-400/40 shadow-[6px_6px_0px_0px_rgba(250,204,21,0.4)] dark:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-colors duration-300 flex flex-col relative">
@@ -474,6 +479,28 @@
                 <div id="awards-list" class="space-y-3"></div>
             </div>
         </section>
+
+        <!-- Section Toggle ON/OFF Modal -->
+        <div id="section-toggle-modal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-md p-6 transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400 flex flex-col max-h-[85vh]">
+                <div class="flex justify-between items-center mb-4 border-b-2 border-black dark:border-amber-400 pb-3">
+                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-amber-500"></i> 화면 섹션 ON/OFF 설정
+                    </h3>
+                    <button onclick="closeSectionToggleModal()" class="text-amber-500 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-amber-200 mb-4 font-bold">원하는 메뉴 및 화면 섹션의 표시 여부를 켜고 끌 수 있습니다.</p>
+                
+                <div class="space-y-3 overflow-y-auto flex-grow p-1 font-bold text-xs" id="section-toggle-list">
+                    <!-- Dynamic Toggle Items Injected via JS -->
+                </div>
+
+                <div class="mt-5 pt-3 border-t-2 border-black dark:border-amber-400 flex justify-end gap-2 text-xs font-black">
+                    <button onclick="closeSectionToggleModal()" class="px-4 py-2.5 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200 hover:bg-gray-300">취소</button>
+                    <button onclick="saveSectionVisibility()" class="px-5 py-2.5 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500">저장 완료</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Admin Access Login Modal -->
         <div id="admin-login-modal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
@@ -760,6 +787,20 @@
             }
         }
 
+        const defaultSectionVisibility = {
+            intro: true,
+            dday: true,
+            broadcast: true,
+            likes: true,
+            notice: true,
+            schedule: true,
+            pledge: true,
+            fortune: true,
+            homework: true,
+            songlist: true,
+            awards: true
+        };
+
         const defaultUpboData = [
             { id: 'whiteone325', nickname: '워냥대장', items: [{ name: '자필 손편지 방셀', count: 2 }, { name: '모닝콜 녹음 선물', count: 1 }] },
             { id: 'fan_cat_1', nickname: '노랑고양이', items: [{ name: '노래 우선신청권', count: 3 }] }
@@ -797,7 +838,8 @@
                 youtube: "https://www.youtube.com/@난워니",
                 cafe: "https://cafe.naver.com/nanwony",
                 fancim: "https://fancim.me/celeb/profile.aspx?cu_id=nanwony"
-            }
+            },
+            sectionVisibility: defaultSectionVisibility
         };
 
         const defaultSongsData = [
@@ -814,7 +856,6 @@
             { year: '2025', title: 'SOOP 버추얼 랭킹 진입 🎉', desc: '워냥이들의 열렬한 응원으로 랭킹 진입 달성!' }
         ];
 
-        // Global State
         let globalUpboData = [];
         let globalNoticeData = [];
         let globalScheduleData = [];
@@ -860,6 +901,9 @@
                         globalNoticeData = data.notice || defaultNoticeData;
                         globalScheduleData = data.schedule || defaultScheduleData;
                         globalProfileData = data.profile || defaultProfileData;
+                        if (!globalProfileData.sectionVisibility) {
+                            globalProfileData.sectionVisibility = defaultSectionVisibility;
+                        }
                         globalSongsData = data.songs || defaultSongsData;
                         globalPledgeText = data.pledgeText || defaultPledgeText;
                         globalAwardsData = data.awards || defaultAwardsData;
@@ -909,6 +953,9 @@
             globalNoticeData = safeGetStorage('nanwonyNotice', defaultNoticeData);
             globalScheduleData = safeGetStorage('nanwonySchedule', defaultScheduleData);
             globalProfileData = safeGetStorage('nanwonyProfile', defaultProfileData);
+            if (!globalProfileData.sectionVisibility) {
+                globalProfileData.sectionVisibility = defaultSectionVisibility;
+            }
             globalSongsData = safeGetStorage('nanwonySongs', defaultSongsData);
             globalPledgeText = safeGetStorage('nanwonyPledgeText', defaultPledgeText);
             globalAwardsData = safeGetStorage('nanwonyAwards', defaultAwardsData);
@@ -925,6 +972,132 @@
                     console.warn("Firestore update error:", error.message);
                 }
             }
+        }
+
+        function applySectionVisibility() {
+            const visibility = globalProfileData.sectionVisibility || defaultSectionVisibility;
+
+            // 1. Profile sub-cards
+            const cardIntro = document.getElementById('card-profile-intro');
+            if (cardIntro) cardIntro.classList.toggle('hidden', !visibility.intro);
+
+            const cardDday = document.getElementById('card-profile-dday');
+            if (cardDday) cardDday.classList.toggle('hidden', !visibility.dday);
+
+            const introDdayGrid = document.getElementById('intro-dday-grid');
+            if (introDdayGrid) {
+                introDdayGrid.classList.toggle('hidden', !visibility.intro && !visibility.dday);
+            }
+
+            const cardBroadcast = document.getElementById('card-profile-broadcast');
+            if (cardBroadcast) cardBroadcast.classList.toggle('hidden', !visibility.broadcast);
+
+            const cardLikes = document.getElementById('card-profile-likes');
+            if (cardLikes) cardLikes.classList.toggle('hidden', !visibility.likes);
+
+            // 2. Main sections & Navigation links
+            const sectionNotice = document.getElementById('notice');
+            if (sectionNotice) sectionNotice.classList.toggle('hidden', !visibility.notice);
+            document.getElementById('nav-link-notice')?.classList.toggle('hidden', !visibility.notice);
+            document.getElementById('mobile-nav-notice')?.classList.toggle('hidden', !visibility.notice);
+
+            const sectionSchedule = document.getElementById('schedule');
+            if (sectionSchedule) sectionSchedule.classList.toggle('hidden', !visibility.schedule);
+            document.getElementById('nav-link-schedule')?.classList.toggle('hidden', !visibility.schedule);
+            document.getElementById('mobile-nav-schedule')?.classList.toggle('hidden', !visibility.schedule);
+
+            const noticeScheduleGrid = document.getElementById('notice-schedule-grid');
+            if (noticeScheduleGrid) {
+                noticeScheduleGrid.classList.toggle('hidden', !visibility.notice && !visibility.schedule);
+            }
+
+            const sectionPledge = document.getElementById('pledge');
+            if (sectionPledge) sectionPledge.classList.toggle('hidden', !visibility.pledge);
+            document.getElementById('nav-link-pledge')?.classList.toggle('hidden', !visibility.pledge);
+            document.getElementById('mobile-nav-pledge')?.classList.toggle('hidden', !visibility.pledge);
+
+            const sectionFortune = document.getElementById('fortune');
+            if (sectionFortune) sectionFortune.classList.toggle('hidden', !visibility.fortune);
+            document.getElementById('nav-link-fortune')?.classList.toggle('hidden', !visibility.fortune);
+            document.getElementById('mobile-nav-fortune')?.classList.toggle('hidden', !visibility.fortune);
+
+            const sectionHomework = document.getElementById('homework');
+            if (sectionHomework) sectionHomework.classList.toggle('hidden', !visibility.homework);
+            document.getElementById('nav-link-homework')?.classList.toggle('hidden', !visibility.homework);
+            document.getElementById('mobile-nav-homework')?.classList.toggle('hidden', !visibility.homework);
+
+            const sectionSonglist = document.getElementById('songlist');
+            if (sectionSonglist) sectionSonglist.classList.toggle('hidden', !visibility.songlist);
+            document.getElementById('nav-link-songlist')?.classList.toggle('hidden', !visibility.songlist);
+            document.getElementById('mobile-nav-songlist')?.classList.toggle('hidden', !visibility.songlist);
+
+            const sectionAwards = document.getElementById('awards');
+            if (sectionAwards) sectionAwards.classList.toggle('hidden', !visibility.awards);
+            document.getElementById('nav-link-awards')?.classList.toggle('hidden', !visibility.awards);
+            document.getElementById('mobile-nav-awards')?.classList.toggle('hidden', !visibility.awards);
+        }
+
+        function openSectionToggleModal() {
+            const modal = document.getElementById('section-toggle-modal');
+            renderSectionToggleList();
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+            });
+        }
+
+        function closeSectionToggleModal() {
+            const modal = document.getElementById('section-toggle-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+        }
+
+        function renderSectionToggleList() {
+            const list = document.getElementById('section-toggle-list');
+            if (!list) return;
+            const visibility = globalProfileData.sectionVisibility || defaultSectionVisibility;
+
+            const items = [
+                { id: 'intro', name: '🐾 자기소개 문구' },
+                { id: 'dday', name: '🎉 함께한 순간들 (기념일)' },
+                { id: 'broadcast', name: '📻 LIVE ON AIR INFO' },
+                { id: 'likes', name: '💛 LOVE & HATE LIST' },
+                { id: 'notice', name: '📢 공지사항' },
+                { id: 'schedule', name: '📅 주간 일정' },
+                { id: 'pledge', name: '📜 API 공약 안내' },
+                { id: 'fortune', name: '🔮 오늘의 고양이 운세' },
+                { id: 'homework', name: '🐾 방셀 숙제 현황' },
+                { id: 'songlist', name: '🎵 노래책' },
+                { id: 'awards', name: '🏆 수상내역 및 아카이브' }
+            ];
+
+            list.innerHTML = items.map(item => `
+                <div class="flex items-center justify-between bg-amber-50 dark:bg-black/40 border border-amber-400/30 p-3 rounded-xl">
+                    <span class="text-brand-dark dark:text-amber-100 text-xs font-black">${item.name}</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-section-${item.id}" ${visibility[item.id] !== false ? 'checked' : ''} class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400 border border-black"></div>
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        function saveSectionVisibility() {
+            const visibility = {};
+            const keys = ['intro', 'dday', 'broadcast', 'likes', 'notice', 'schedule', 'pledge', 'fortune', 'homework', 'songlist', 'awards'];
+            
+            keys.forEach(key => {
+                const checkbox = document.getElementById(`toggle-section-${key}`);
+                visibility[key] = checkbox ? checkbox.checked : true;
+            });
+
+            globalProfileData.sectionVisibility = visibility;
+            updateFirestore('profile', globalProfileData);
+            applySectionVisibility();
+            closeSectionToggleModal();
+            showToast("화면 섹션 표시 설정이 반영되었습니다! ⚙️");
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -995,6 +1168,7 @@
             renderPledgeText();
             renderSongList();
             renderAwards();
+            applySectionVisibility();
         });
 
         function generateBgGlitter() {
@@ -1447,6 +1621,7 @@
             document.getElementById('admin-edit-pledge-text-btn')?.classList[method]('hidden');
             document.getElementById('admin-add-award-btn')?.classList[method]('hidden');
             document.getElementById('admin-banner-upload-container')?.classList[method]('hidden');
+            document.getElementById('admin-section-toggle-btn')?.classList[method]('hidden');
 
             renderSongList();
             renderAwards();
@@ -1951,6 +2126,7 @@
             showToast("수상 기록이 삭제되었습니다.");
         }
 
+        // Window Interface Binders
         window.drawCatFortune = drawCatFortune;
         window.handleDirectBannerUpload = handleDirectBannerUpload;
         window.openAdminLoginModal = openAdminLoginModal;
@@ -1991,6 +2167,9 @@
         window.closeAddAwardModal = closeAddAwardModal;
         window.submitNewAward = submitNewAward;
         window.deleteAward = deleteAward;
+        window.openSectionToggleModal = openSectionToggleModal;
+        window.closeSectionToggleModal = closeSectionToggleModal;
+        window.saveSectionVisibility = saveSectionVisibility;
     </script>
 </body>
 </html>
