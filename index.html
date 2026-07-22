@@ -120,6 +120,11 @@
                         ⚙️ ON/OFF
                     </button>
 
+                    <!-- Top Right Admin Login Button -->
+                    <button id="top-admin-login-btn" onclick="openAdminLoginModal()" class="bg-amber-100 dark:bg-brand-cardBg hover:bg-amber-200 dark:hover:bg-amber-400/20 text-brand-dark dark:text-amber-300 border border-amber-400/50 px-2.5 py-1.5 rounded-xl transition-all font-black text-xs shadow-sm flex items-center gap-1" title="관리자 인증">
+                        <span class="text-sm">🐱</span> <span id="top-admin-btn-text">관리자</span>
+                    </button>
+
                     <!-- Theme toggler -->
                     <button id="theme-toggle" class="text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 p-2 rounded-xl transition-colors">
                         <i class="fa-solid fa-moon text-base w-5 h-5 flex items-center justify-center"></i>
@@ -127,6 +132,12 @@
                 </nav>
                 <!-- Mobile Menu and theme buttons -->
                 <div class="lg:hidden flex items-center gap-1">
+                    <button id="mobile-admin-section-toggle-btn" onclick="openSectionToggleModal()" class="hidden bg-amber-400 hover:bg-amber-500 text-black px-2 py-1.5 rounded-xl font-black text-xs shadow-sm" title="섹션 ON/OFF 설정">
+                        ⚙️ ON/OFF
+                    </button>
+                    <button id="mobile-top-admin-btn" onclick="openAdminLoginModal()" class="p-2 text-base hover:bg-amber-400/10 rounded-xl transition-colors" title="관리자 인증">
+                        🐱
+                    </button>
                     <button id="mobile-theme-toggle" class="text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 p-2.5 rounded-xl transition-colors">
                         <i class="fa-solid fa-moon text-lg w-5 h-5 flex items-center justify-center"></i>
                     </button>
@@ -147,6 +158,9 @@
                 <a id="mobile-nav-homework" href="#homework" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">방셀 숙제 현황</a>
                 <a id="mobile-nav-songlist" href="#songlist" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">노래책</a>
                 <a id="mobile-nav-awards" href="#awards" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">수상내역</a>
+                <button id="mobile-menu-admin-toggle-btn" onclick="openSectionToggleModal()" class="hidden w-full text-left bg-amber-400 text-black font-black px-4 py-2.5 rounded-xl mt-2">
+                    ⚙️ 섹션 ON/OFF 설정
+                </button>
             </div>
         </div>
     </header>
@@ -611,11 +625,6 @@
                 </div>
                 
                 <div class="p-5 flex-grow overflow-y-auto space-y-5 text-xs font-bold">
-                    <div>
-                        <h4 class="text-sm text-brand-dark dark:text-white mb-2"><i class="fa-regular fa-image text-amber-500 mr-1"></i> 상단 아트 배너 URL</h4>
-                        <input type="text" id="edit-profile-banner" class="w-full bg-amber-50/50 dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none" placeholder="이미지 주소 (URL)">
-                    </div>
-
                     <div>
                         <h4 class="text-sm text-brand-dark dark:text-white mb-2"><i class="fa-solid fa-star text-amber-500"></i> 자기소개 문구</h4>
                         <textarea id="edit-profile-intro" rows="3" class="w-full bg-amber-50/50 dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none resize-none mb-2"></textarea>
@@ -1622,6 +1631,32 @@
             document.getElementById('admin-add-award-btn')?.classList[method]('hidden');
             document.getElementById('admin-banner-upload-container')?.classList[method]('hidden');
             document.getElementById('admin-section-toggle-btn')?.classList[method]('hidden');
+            document.getElementById('mobile-admin-section-toggle-btn')?.classList[method]('hidden');
+            document.getElementById('mobile-menu-admin-toggle-btn')?.classList[method]('hidden');
+
+            const topBtnText = document.getElementById('top-admin-btn-text');
+            const topBtn = document.getElementById('top-admin-login-btn');
+            const mobileTopBtn = document.getElementById('mobile-top-admin-btn');
+
+            if (topBtnText && topBtn) {
+                if (show) {
+                    topBtnText.innerText = "관리자 (ON)";
+                    topBtn.classList.add('bg-amber-400', 'text-black', 'border-black');
+                    topBtn.classList.remove('bg-amber-100', 'dark:bg-brand-cardBg', 'text-brand-dark', 'dark:text-amber-300');
+                } else {
+                    topBtnText.innerText = "관리자";
+                    topBtn.classList.remove('bg-amber-400', 'text-black', 'border-black');
+                    topBtn.classList.add('bg-amber-100', 'dark:bg-brand-cardBg', 'text-brand-dark', 'dark:text-amber-300');
+                }
+            }
+
+            if (mobileTopBtn) {
+                if (show) {
+                    mobileTopBtn.classList.add('bg-amber-400', 'text-black', 'rounded-xl');
+                } else {
+                    mobileTopBtn.classList.remove('bg-amber-400', 'text-black');
+                }
+            }
 
             renderSongList();
             renderAwards();
@@ -1684,7 +1719,6 @@
 
         function openProfileEditModal() {
             const modal = document.getElementById('profile-edit-modal');
-            document.getElementById('edit-profile-banner').value = globalProfileData.bannerUrl || '';
             document.getElementById('edit-profile-intro').value = globalProfileData.introText || '';
             document.getElementById('edit-profile-tags').value = (globalProfileData.tags || []).join(', ');
 
@@ -1713,7 +1747,6 @@
         function saveProfileChanges() {
             const parse = (str) => str.split(',').map(item => item.trim()).filter(item => item !== '');
             
-            globalProfileData.bannerUrl = document.getElementById('edit-profile-banner').value.trim();
             globalProfileData.introText = document.getElementById('edit-profile-intro').value;
             globalProfileData.tags = parse(document.getElementById('edit-profile-tags').value);
 
