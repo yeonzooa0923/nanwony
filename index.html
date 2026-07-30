@@ -73,17 +73,6 @@
             animation: pawPulse 1.5s infinite ease-in-out;
         }
 
-        /* 떨어지는 발바닥/별 입자 */
-        .sparkle-particle {
-            position: absolute;
-            pointer-events: none;
-            animation: drift linear forwards;
-        }
-        @keyframes drift {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(105vh) translateX(40px) rotate(360deg); opacity: 0; }
-        }
-
         /* 스크롤바 숨기기 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -91,7 +80,11 @@
 </head>
 <body class="bg-[#fefce8] dark:bg-[#0d0d0f] text-[#26241e] dark:text-amber-100 font-sans text-lg antialiased min-h-screen flex flex-col transition-colors duration-300 relative overflow-x-hidden">
 
-    <div class="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-60 dark:opacity-40" id="glitter-bg"></div>
+    <!-- Toast Notification Overlay -->
+    <div id="toast" class="fixed bottom-5 right-5 z-[200] transform translate-y-20 opacity-0 transition-all duration-300 bg-black text-amber-300 border-2 border-amber-400 px-5 py-3 rounded-2xl shadow-2xl font-bold text-sm flex items-center gap-2 pointer-events-none">
+        <span id="toast-icon">🐾</span>
+        <span id="toast-msg">알림 메시지</span>
+    </div>
 
     <header class="bg-white/80 dark:bg-brand-dark/90 backdrop-blur-md shadow-md sticky top-0 z-50 transition-all duration-300 border-b-2 border-amber-400/30 dark:border-amber-400/40">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -120,14 +113,14 @@
                         ⚙️ ON/OFF
                     </button>
 
-                    <!-- Top Right Admin Login Button -->
-                    <button id="top-admin-login-btn" onclick="openAdminLoginModal()" class="bg-amber-100 dark:bg-brand-cardBg hover:bg-amber-200 dark:hover:bg-amber-400/20 text-brand-dark dark:text-amber-300 border border-amber-400/50 px-2.5 py-1.5 rounded-xl transition-all font-black text-xs shadow-sm flex items-center gap-1" title="관리자 인증">
-                        <span class="text-sm">🐱</span> <span id="top-admin-btn-text">관리자</span>
+                    <!-- Top Right Admin Auth Button -->
+                    <button id="top-admin-login-btn" onclick="handleAdminAuthButtonClick()" class="bg-amber-100 dark:bg-brand-cardBg hover:bg-amber-200 dark:hover:bg-amber-400/20 text-brand-dark dark:text-amber-300 border border-amber-400/50 px-2.5 py-1.5 rounded-xl transition-all font-black text-xs shadow-sm flex items-center gap-1" title="관리자 인증">
+                        <span class="text-sm">🐱</span> <span id="top-admin-btn-text">관리자 로그인</span>
                     </button>
 
                     <!-- Theme toggler -->
-                    <button id="theme-toggle" class="text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 p-2 rounded-xl transition-colors">
-                        <i class="fa-solid fa-moon text-base w-5 h-5 flex items-center justify-center"></i>
+                    <button id="theme-toggle" onclick="toggleDarkMode()" class="text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 p-2 rounded-xl transition-colors">
+                        <i id="theme-icon" class="fa-solid fa-moon text-base w-5 h-5 flex items-center justify-center"></i>
                     </button>
                 </nav>
                 <!-- Mobile Menu and theme buttons -->
@@ -135,13 +128,13 @@
                     <button id="mobile-admin-section-toggle-btn" onclick="openSectionToggleModal()" class="hidden bg-amber-400 hover:bg-amber-500 text-black px-2 py-1.5 rounded-xl font-black text-xs shadow-sm" title="섹션 ON/OFF 설정">
                         ⚙️ ON/OFF
                     </button>
-                    <button id="mobile-top-admin-btn" onclick="openAdminLoginModal()" class="p-2 text-base hover:bg-amber-400/10 rounded-xl transition-colors" title="관리자 인증">
+                    <button id="mobile-top-admin-btn" onclick="handleAdminAuthButtonClick()" class="p-2 text-base hover:bg-amber-400/10 rounded-xl transition-colors" title="관리자 인증">
                         🐱
                     </button>
-                    <button id="mobile-theme-toggle" class="text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 p-2.5 rounded-xl transition-colors">
-                        <i class="fa-solid fa-moon text-lg w-5 h-5 flex items-center justify-center"></i>
+                    <button id="mobile-theme-toggle" onclick="toggleDarkMode()" class="text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 p-2.5 rounded-xl transition-colors">
+                        <i id="mobile-theme-icon" class="fa-solid fa-moon text-lg w-5 h-5 flex items-center justify-center"></i>
                     </button>
-                    <button id="mobile-menu-btn" class="text-brand-dark dark:text-amber-200 focus:outline-none p-2.5 rounded-xl hover:bg-amber-400/10">
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="text-brand-dark dark:text-amber-200 focus:outline-none p-2.5 rounded-xl hover:bg-amber-400/10">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                 </div>
@@ -150,15 +143,15 @@
         <!-- Mobile expandable panel -->
         <div id="mobile-menu" class="hidden lg:hidden bg-white/95 dark:bg-brand-dark/95 border-t-2 border-amber-400/30 dark:border-amber-400/40">
             <div class="px-4 pt-2 pb-4 space-y-1.5 font-bold text-sm uppercase">
-                <a id="mobile-nav-profile" href="#profile" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">프로필</a>
-                <a id="mobile-nav-notice" href="#notice" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">공지사항</a>
-                <a id="mobile-nav-schedule" href="#schedule" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">스케줄</a>
-                <a id="mobile-nav-pledge" href="#pledge" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">API 공약 안내</a>
-                <a id="mobile-nav-fortune" href="#fortune" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">오늘의 고양이 운세 🐾</a>
-                <a id="mobile-nav-homework" href="#homework" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">방셀 숙제 현황</a>
-                <a id="mobile-nav-songlist" href="#songlist" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">노래책</a>
-                <a id="mobile-nav-awards" href="#awards" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">수상내역</a>
-                <button id="mobile-menu-admin-toggle-btn" onclick="openSectionToggleModal()" class="hidden w-full text-left bg-amber-400 text-black font-black px-4 py-2.5 rounded-xl mt-2">
+                <a id="mobile-nav-profile" href="#profile" onclick="closeMobileMenu()" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">프로필</a>
+                <a id="mobile-nav-notice" href="#notice" onclick="closeMobileMenu()" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">공지사항</a>
+                <a id="mobile-nav-schedule" href="#schedule" onclick="closeMobileMenu()" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">스케줄</a>
+                <a id="mobile-nav-pledge" href="#pledge" onclick="closeMobileMenu()" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">API 공약 안내</a>
+                <a id="mobile-nav-fortune" href="#fortune" onclick="closeMobileMenu()" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">오늘의 고양이 운세 🐾</a>
+                <a id="mobile-nav-homework" href="#homework" onclick="closeMobileMenu()" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">방셀 숙제 현황</a>
+                <a id="mobile-nav-songlist" href="#songlist" onclick="closeMobileMenu()" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">노래책</a>
+                <a id="mobile-nav-awards" href="#awards" onclick="closeMobileMenu()" class="block text-brand-dark dark:text-amber-200 hover:bg-amber-400/10 hover:text-amber-500 px-4 py-2.5 rounded-xl">수상내역</a>
+                <button id="mobile-menu-admin-toggle-btn" onclick="openSectionToggleModal(); closeMobileMenu();" class="hidden w-full text-left bg-amber-400 text-black font-black px-4 py-2.5 rounded-xl mt-2">
                     ⚙️ 섹션 ON/OFF 설정
                 </button>
             </div>
@@ -179,15 +172,6 @@
                          onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop'" 
                          class="w-full h-full object-cover absolute inset-0 opacity-80 transition-opacity duration-300" alt="난워니 배너">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
-                    
-                    <!-- Direct Banner Picture File Upload Button (Admin Mode Only) -->
-                    <div id="admin-banner-upload-container" class="hidden absolute top-3 right-3 z-20">
-                        <label for="direct-banner-upload" class="cursor-pointer inline-flex items-center gap-1.5 bg-black/70 hover:bg-amber-400 hover:text-black text-amber-300 text-xs font-black px-3 py-2 rounded-xl border-2 border-amber-400 backdrop-blur-md transition-all shadow-md">
-                            <i class="fa-solid fa-camera text-sm"></i>
-                            <span>📸 배너 사진 직접 업로드</span>
-                        </label>
-                        <input type="file" id="direct-banner-upload" accept="image/*" class="hidden" onchange="handleDirectBannerUpload(event)">
-                    </div>
                 </div>
                 
                 <div class="px-6 sm:px-8 pb-6 flex flex-col sm:flex-row relative">
@@ -251,7 +235,7 @@
                             <h3 class="flex items-center gap-2 text-lg font-bold text-brand-dark dark:text-white">
                                 🐾 자기소개
                             </h3>
-                            <button id="admin-profile-edit-btn" onclick="openProfileEditModal()" class="hidden text-amber-500 hover:text-black transition-colors p-1" title="대표프로필 수정">
+                            <button id="admin-profile-edit-btn" onclick="openProfileEditModal()" class="hidden text-amber-500 hover:text-black dark:hover:text-amber-300 transition-colors p-1" title="대표프로필 수정">
                                 <i class="fa-solid fa-pen-to-square text-sm"></i>
                             </button>
                         </div>
@@ -322,7 +306,7 @@
                             <span class="text-amber-500">📢</span>
                             <h2 class="text-lg font-black text-brand-dark dark:text-white uppercase tracking-wider">공지사항</h2>
                         </div>
-                        <button id="admin-notice-edit-btn" onclick="openNoticeEditModal()" class="hidden text-amber-500 hover:text-black transition-colors p-1" title="공지 수정">
+                        <button id="admin-notice-edit-btn" onclick="openNoticeEditModal()" class="hidden text-amber-500 hover:text-black dark:hover:text-amber-300 transition-colors p-1" title="공지 수정">
                             <i class="fa-solid fa-pen-to-square text-sm"></i>
                         </button>
                     </div>
@@ -338,7 +322,7 @@
                             <span class="text-amber-500">📅</span>
                             <h2 class="text-lg font-black text-brand-dark dark:text-white uppercase tracking-wider">주간 일정</h2>
                         </div>
-                        <button id="admin-schedule-edit-btn" onclick="openScheduleEditModal()" class="hidden text-amber-500 hover:text-black transition-colors p-1" title="일정 수정">
+                        <button id="admin-schedule-edit-btn" onclick="openScheduleEditModal()" class="hidden text-amber-500 hover:text-black dark:hover:text-amber-300 transition-colors p-1" title="일정 수정">
                             <i class="fa-solid fa-pen-to-square text-sm"></i>
                         </button>
                     </div>
@@ -396,7 +380,6 @@
                     <div>
                         <div class="text-amber-500 font-black tracking-widest text-[11px] mb-1 flex items-center gap-1.5 uppercase font-logo">
                             <span>NANWONY FANSIGN HOMEWORK STATUS</span>
-                            <button onclick="openAdminLoginModal()" class="text-gray-400 hover:text-amber-500 transition-colors text-xs" title="관리인증">🐱</button>
                         </div>
                         <h2 class="text-2xl font-black text-brand-dark dark:text-white tracking-tight">방셀 숙제 현황 🐾</h2>
                     </div>
@@ -414,7 +397,7 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i class="fa-solid fa-magnifying-glass text-amber-500 text-base"></i>
                         </div>
-                        <input type="text" id="upbo-search" class="w-full bg-[#fffef0] dark:bg-[#121215] border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 text-sm rounded-xl focus:ring-1 focus:ring-amber-400 block pl-11 p-3.5 outline-none font-bold transition-colors" placeholder="워냥이 닉네임을 검색해보세요...">
+                        <input type="text" id="upbo-search" oninput="renderHomeworkGrid()" class="w-full bg-[#fffef0] dark:bg-[#121215] border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 text-sm rounded-xl focus:ring-1 focus:ring-amber-400 block pl-11 p-3.5 outline-none font-bold transition-colors" placeholder="워냥이 닉네임을 검색해보세요...">
                     </div>
                     <button id="admin-add-user-btn" onclick="openAddUserModal()" class="hidden items-center justify-center bg-amber-400 hover:bg-amber-500 text-black font-black py-3.5 px-5 rounded-xl border-2 border-black transition-colors whitespace-nowrap shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-sm">
                         <i class="fa-solid fa-user-plus mr-1.5 text-xs"></i>워냥이 추가
@@ -501,7 +484,7 @@
                     <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2">
                         <i class="fa-solid fa-sliders text-amber-500"></i> 화면 섹션 ON/OFF 설정
                     </h3>
-                    <button onclick="closeSectionToggleModal()" class="text-amber-500 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <button onclick="closeSectionToggleModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-amber-200 mb-4 font-bold">원하는 메뉴 및 화면 섹션의 표시 여부를 켜고 끌 수 있습니다.</p>
                 
@@ -516,16 +499,30 @@
             </div>
         </div>
 
-        <!-- Admin Access Login Modal -->
+        <!-- Firebase Authentication Admin Login Modal (Direct Email/Password) -->
         <div id="admin-login-modal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
             <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-sm p-6 transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400">
-                <h3 class="text-xl font-black text-brand-dark dark:text-white mb-2"><i class="fa-solid fa-key text-amber-400 mr-1"></i> 난워니 비밀번호 인증</h3>
-                <p class="text-xs text-gray-500 dark:text-amber-200 mb-4 font-bold">난워니 전용 비밀번호를 입력해 주세요.</p>
-                <input type="password" id="admin-pin" class="w-full bg-[#fffef0] dark:bg-black/40 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl focus:ring-1 focus:ring-amber-400 p-3.5 mb-4 outline-none text-center tracking-widest font-black text-xl" placeholder="••••••••">
-                <div class="flex justify-end gap-2 text-xs font-black">
-                    <button onclick="closeAdminLoginModal()" class="px-4 py-3 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200 hover:bg-gray-300 transition-colors">취소</button>
-                    <button onclick="checkAdminPin()" class="px-4 py-3 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500 transition-colors">인증 완료</button>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-xl font-black text-brand-dark dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-key text-amber-400"></i> 관리자 인증
+                    </h3>
+                    <button onclick="closeAdminLoginModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
+                <p class="text-xs text-gray-500 dark:text-amber-200 mb-4 font-bold">Firebase 계정 이메일과 비밀번호를 입력해 주세요.</p>
+                <form onsubmit="handleAdminLoginSubmit(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-black text-gray-600 dark:text-amber-300 mb-1">이메일 계정</label>
+                        <input type="email" id="admin-email" required class="w-full bg-[#fffef0] dark:bg-black/40 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl focus:ring-1 focus:ring-amber-400 p-3 outline-none font-bold text-sm" placeholder="nanwony@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-gray-600 dark:text-amber-300 mb-1">비밀번호</label>
+                        <input type="password" id="admin-password" required class="w-full bg-[#fffef0] dark:bg-black/40 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl focus:ring-1 focus:ring-amber-400 p-3 outline-none font-bold text-sm tracking-widest" placeholder="••••••••">
+                    </div>
+                    <div class="flex justify-end gap-2 text-xs font-black pt-3">
+                        <button type="button" onclick="closeAdminLoginModal()" class="px-4 py-3 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200 hover:bg-gray-300 transition-colors">취소</button>
+                        <button type="submit" id="admin-login-submit-btn" class="px-4 py-3 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500 transition-colors">인증 로그인</button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -534,7 +531,7 @@
             <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-sm p-6 transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400">
                 <div class="flex justify-between items-center mb-4 border-b-2 border-black dark:border-amber-400 pb-3">
                     <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-user-plus text-amber-500"></i> 워냥이 등록</h3>
-                    <button onclick="closeAddUserModal()" class="text-amber-500 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <button onclick="closeAddUserModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
                 <div class="space-y-4 font-bold text-xs">
                     <div>
@@ -562,12 +559,12 @@
                         <button id="delete-user-confirm-btn" class="hidden text-xs bg-red-100 text-red-600 font-bold px-2.5 py-1.5 rounded-lg border border-red-500 hover:bg-red-200 transition-all">
                             <i class="fa-solid fa-user-minus mr-1"></i>삭제
                         </button>
-                        <button onclick="closeUpboEditModal()" class="text-amber-500 hover:text-black p-2">
+                        <button onclick="closeUpboEditModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300 p-2">
                             <i class="fa-solid fa-xmark text-xl"></i>
                         </button>
                     </div>
                 </div>
-                <div class="p-4 flex-grow overflow-y-auto" id="edit-modal-body"></div>
+                <div class="p-4 flex-grow overflow-y-auto space-y-2" id="edit-modal-body"></div>
                 <div class="p-4 border-t-2 border-black dark:border-amber-400 bg-amber-50 dark:bg-[#1a1a1e]">
                     <div class="flex gap-2">
                         <input type="text" id="new-item-name" class="flex-grow bg-white dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 text-sm rounded-xl focus:ring-1 focus:ring-amber-400 p-2.5 outline-none font-bold" placeholder="새 숙제/방셀 항목 추가...">
@@ -581,22 +578,19 @@
         <div id="notice-edit-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
             <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400 flex flex-col max-h-[85vh]">
                 <div class="p-4 flex items-center justify-between border-b-2 border-black dark:border-amber-400 bg-amber-100 dark:bg-black">
-                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-1.5"><i class="fa-solid fa-bullhorn text-amber-500"></i> 공지사항 관리</h3>
-                    <button onclick="closeNoticeEditModal()" class="text-amber-500 hover:text-black p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-bullhorn text-amber-500"></i> 공지사항 관리</h3>
+                    <button onclick="closeNoticeEditModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300 p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <div class="p-4 flex-grow overflow-y-auto space-y-3" id="notice-edit-list"></div>
-                <div class="p-4 border-t-2 border-black dark:border-amber-400 bg-amber-50 dark:bg-[#1a1a1e] space-y-3 font-bold text-xs">
-                    <div class="flex gap-2">
-                        <select id="new-notice-type" class="bg-white dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 text-xs rounded-xl focus:ring-1 focus:ring-amber-400 p-2 outline-none w-24 font-black">
-                            <option value="필독">필독 📍</option>
-                            <option value="공지">공지 📢</option>
-                            <option value="일상">일상 🐾</option>
-                        </select>
-                        <input type="text" id="new-notice-content" class="flex-grow bg-white dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 text-xs rounded-xl focus:ring-1 focus:ring-amber-400 p-2.5 outline-none" placeholder="공지할 본문을 입력해 주세요...">
+                <div class="p-4 flex-grow overflow-y-auto space-y-4 text-xs font-bold">
+                    <div class="space-y-2">
+                        <label class="block text-gray-500 dark:text-amber-200">새 공지 추가</label>
+                        <input type="text" id="notice-input-title" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none font-bold" placeholder="공지 제목">
+                        <textarea id="notice-input-content" rows="3" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none font-bold" placeholder="공지 내용 입력..."></textarea>
+                        <button onclick="addNewNoticeItem()" class="w-full bg-amber-400 hover:bg-amber-500 text-black font-black py-2.5 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">공지 추가하기</button>
                     </div>
-                    <div class="flex gap-2">
-                        <input type="text" id="new-notice-link" class="flex-grow bg-white dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 text-xs rounded-xl focus:ring-1 focus:ring-amber-400 p-2.5 outline-none" placeholder="이동 링크 (선택 / https://...)">
-                        <button onclick="addNewNotice()" class="bg-amber-400 text-black border-2 border-black px-5 py-2.5 rounded-xl hover:bg-amber-500 transition-colors whitespace-nowrap font-black">등록</button>
+                    <div class="border-t border-amber-400/30 pt-3">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-2">현재 공지목록</label>
+                        <div id="notice-edit-list-container" class="space-y-2"></div>
                     </div>
                 </div>
             </div>
@@ -604,67 +598,95 @@
 
         <!-- Schedule Edit Modal -->
         <div id="schedule-edit-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
-            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-sm overflow-hidden transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400 flex flex-col max-h-[85vh]">
+            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400 flex flex-col max-h-[85vh]">
                 <div class="p-4 flex items-center justify-between border-b-2 border-black dark:border-amber-400 bg-amber-100 dark:bg-black">
-                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-1.5"><i class="fa-regular fa-calendar text-amber-500"></i> 일정 변경 센터</h3>
-                    <button onclick="closeScheduleEditModal()" class="text-amber-500 hover:text-black p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-calendar-days text-amber-500"></i> 주간 일정 편집</h3>
+                    <button onclick="closeScheduleEditModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300 p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <div class="p-4 flex-grow overflow-y-auto space-y-2.5" id="schedule-edit-list"></div>
-                <div class="p-4 border-t-2 border-black dark:border-amber-400 bg-amber-50 dark:bg-[#1a1a1e] flex justify-end text-xs font-black">
-                    <button onclick="saveScheduleChanges()" class="bg-amber-400 text-black border-2 border-black px-6 py-3 rounded-xl hover:bg-amber-500 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">저장 완료</button>
+                <div class="p-4 flex-grow overflow-y-auto space-y-3 text-xs font-bold" id="schedule-edit-fields"></div>
+                <div class="p-4 border-t-2 border-black dark:border-amber-400 flex justify-end gap-2 text-xs font-black">
+                    <button onclick="closeScheduleEditModal()" class="px-4 py-2.5 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200">취소</button>
+                    <button onclick="saveScheduleData()" class="px-5 py-2.5 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500">일정 저장</button>
                 </div>
             </div>
         </div>
 
         <!-- Profile Edit Modal -->
         <div id="profile-edit-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
-            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400 flex flex-col max-h-[90vh]">
+            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400 flex flex-col max-h-[85vh]">
                 <div class="p-4 flex items-center justify-between border-b-2 border-black dark:border-amber-400 bg-amber-100 dark:bg-black">
-                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-address-card text-amber-500"></i> 대표 프로필 수정</h3>
-                    <button onclick="closeProfileEditModal()" class="text-amber-500 hover:text-black p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-user-gear text-amber-500"></i> 프로필 정보 수정</h3>
+                    <button onclick="closeProfileEditModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300 p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                
-                <div class="p-5 flex-grow overflow-y-auto space-y-5 text-xs font-bold">
+                <div class="p-4 flex-grow overflow-y-auto space-y-3 text-xs font-bold">
                     <div>
-                        <h4 class="text-sm text-brand-dark dark:text-white mb-2"><i class="fa-solid fa-star text-amber-500"></i> 자기소개 문구</h4>
-                        <textarea id="edit-profile-intro" rows="3" class="w-full bg-amber-50/50 dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none resize-none mb-2"></textarea>
-                        <label class="block text-gray-400 mb-1">태그 키워드 (쉼표 분리)</label>
-                        <input type="text" id="edit-profile-tags" class="w-full bg-amber-50/50 dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">배너 이미지 URL</label>
+                        <input type="text" id="edit-profile-banner" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none">
                     </div>
-
                     <div>
-                        <h4 class="text-sm text-brand-dark dark:text-white mb-2"><i class="fa-regular fa-calendar-check text-amber-500"></i> 방송 상세 정보</h4>
-                        <div class="space-y-2">
-                            <input type="text" id="edit-profile-time" class="w-full bg-amber-50/50 dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-2.5 outline-none" placeholder="방송 시간">
-                            <input type="text" id="edit-profile-content" class="w-full bg-amber-50/50 dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-2.5 outline-none" placeholder="주요 콘텐츠">
-                            <input type="text" id="edit-profile-game" class="w-full bg-amber-50/50 dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-2.5 outline-none" placeholder="선호 분야">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">아바타 프로필 URL</label>
+                        <input type="text" id="edit-profile-avatar" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">자기소개</label>
+                        <textarea id="edit-profile-intro" rows="3" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none"></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-gray-500 dark:text-amber-200 mb-1">방송시간</label>
+                            <input type="text" id="edit-broadcast-time" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2 rounded-xl outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-gray-500 dark:text-amber-200 mb-1">방송콘텐츠</label>
+                            <input type="text" id="edit-broadcast-content" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2 rounded-xl outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-gray-500 dark:text-amber-200 mb-1">선호게임</label>
+                            <input type="text" id="edit-broadcast-game" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2 rounded-xl outline-none">
                         </div>
                     </div>
-
                     <div>
-                        <h4 class="text-sm text-brand-dark dark:text-white mb-2"><i class="fa-solid fa-heart text-amber-500"></i> 좋아함 / 싫어함 (쉼표 분리)</h4>
-                        <input type="text" id="edit-profile-likes" class="w-full bg-amber-50/50 dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-2.5 mb-2 outline-none" placeholder="좋아하는 거">
-                        <input type="text" id="edit-profile-dislikes" class="w-full bg-amber-50/50 dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-2.5 outline-none" placeholder="싫어하는 거">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">좋아하는 것 (쉼표로 구분)</label>
+                        <input type="text" id="edit-profile-likes" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none" placeholder="노래, 젤리, 집콕">
+                    </div>
+                    <div>
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">싫어하는 것 (쉼표로 구분)</label>
+                        <input type="text" id="edit-profile-dislikes" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none" placeholder="벌레, 야채, 지각">
                     </div>
                 </div>
-                <div class="p-4 border-t-2 border-black dark:border-amber-400 bg-amber-50 dark:bg-[#1a1a1e] flex justify-end gap-2 text-xs font-black">
-                    <button onclick="closeProfileEditModal()" class="px-4 py-2.5 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200 hover:bg-gray-300">취소</button>
-                    <button onclick="saveProfileChanges()" class="bg-amber-400 text-black border-2 border-black px-6 py-2.5 rounded-xl hover:bg-amber-500 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">저장 완료</button>
+                <div class="p-4 border-t-2 border-black dark:border-amber-400 flex justify-end gap-2 text-xs font-black">
+                    <button onclick="closeProfileEditModal()" class="px-4 py-2.5 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200">취소</button>
+                    <button onclick="saveProfileData()" class="px-5 py-2.5 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500">프로필 저장</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pledge Edit Modal -->
+        <div id="pledge-edit-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-lg p-6 border-4 border-black dark:border-amber-400">
+                <div class="flex justify-between items-center mb-4 border-b-2 border-black dark:border-amber-400 pb-3">
+                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-scroll text-amber-500"></i> API 공약 내용 수정</h3>
+                    <button onclick="closeEditPledgeTextModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <textarea id="pledge-textarea" rows="8" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-3 rounded-xl outline-none font-semibold text-sm leading-relaxed"></textarea>
+                <div class="mt-4 flex justify-end gap-2 text-xs font-black">
+                    <button onclick="closeEditPledgeTextModal()" class="px-4 py-2.5 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200">취소</button>
+                    <button onclick="savePledgeTextData()" class="px-5 py-2.5 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500">공약 저장</button>
                 </div>
             </div>
         </div>
 
         <!-- Add Song Modal -->
-        <div id="add-song-modal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
-            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-sm p-6 transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400">
+        <div id="add-song-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-md p-6 border-4 border-black dark:border-amber-400">
                 <div class="flex justify-between items-center mb-4 border-b-2 border-black dark:border-amber-400 pb-3">
-                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-music text-amber-500"></i> 노래책 신청곡 등록</h3>
-                    <button onclick="closeAddSongModal()" class="text-amber-500 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-music text-amber-500"></i> 새 노래 추가</h3>
+                    <button onclick="closeAddSongModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <div class="space-y-4 font-bold text-xs">
+                <div class="space-y-3 font-bold text-xs">
                     <div>
-                        <label class="block text-gray-500 dark:text-amber-200 mb-1.5">장르</label>
-                        <select id="new-song-genre" class="w-full bg-white dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none font-bold">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">장르</label>
+                        <select id="new-song-genre" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none">
                             <option value="귀여운곡">귀여운 곡 🐾</option>
                             <option value="발라드/감성">발라드/감성 🌙</option>
                             <option value="J-Pop/애니">J-Pop/애니 ✨</option>
@@ -672,1537 +694,1079 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-gray-500 dark:text-amber-200 mb-1.5">곡 제목 (필수)</label>
-                        <input type="text" id="new-song-title" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none" placeholder="예: 냐옹이 송">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">곡 제목</label>
+                        <input type="text" id="new-song-title" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none" placeholder="노래 제목 입력">
                     </div>
                     <div>
-                        <label class="block text-gray-500 dark:text-amber-200 mb-1.5">아티스트 (필수)</label>
-                        <input type="text" id="new-song-artist" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none" placeholder="예: 난워니">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">아티스트</label>
+                        <input type="text" id="new-song-artist" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none" placeholder="가수/아티스트 명">
                     </div>
                     <div>
-                        <label class="block text-gray-500 dark:text-amber-200 mb-1.5">숙련도 별점</label>
-                        <select id="new-song-rating" class="w-full bg-white dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none font-bold">
-                            <option value="5">★★★★★ (냥벽 완창가능) 💛</option>
-                            <option value="4">★★★★☆ (자신감 뿜뿜) ⭐</option>
-                            <option value="3">★★★☆☆ (감성 충만 연습) ✨</option>
-                            <option value="2">★★☆☆☆ (연습 진행중) 🐾</option>
-                        </select>
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">숙련도 (★ 1~5)</label>
+                        <input type="number" id="new-song-level" min="1" max="5" value="5" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none">
                     </div>
                 </div>
-                <div class="mt-6 flex justify-end gap-2 text-xs font-black">
-                    <button onclick="closeAddSongModal()" class="px-4 py-3 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200 hover:bg-gray-300">취소</button>
-                    <button onclick="submitNewSong()" class="px-4 py-3 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500">등록 완료</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Edit Pledge Text Modal -->
-        <div id="edit-pledge-text-modal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
-            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-md p-6 transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400">
-                <div class="flex justify-between items-center mb-4 border-b-2 border-black dark:border-amber-400 pb-3">
-                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-scroll text-amber-500"></i> API 공약 안내 수정</h3>
-                    <button onclick="closeEditPledgeTextModal()" class="text-amber-500 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div class="space-y-4 font-bold text-xs">
-                    <div>
-                        <label class="block text-gray-500 dark:text-amber-200 mb-1.5">공약 안내 내용</label>
-                        <textarea id="edit-pledge-textarea" rows="8" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none resize-none" placeholder="공약 안내 문구를 적어주세요..."></textarea>
-                    </div>
-                </div>
-                <div class="mt-6 flex justify-end gap-2 text-xs font-black">
-                    <button onclick="closeEditPledgeTextModal()" class="px-4 py-3 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200">취소</button>
-                    <button onclick="savePledgeTextChanges()" class="px-4 py-3 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500">저장 완료</button>
+                <div class="mt-5 flex justify-end gap-2 text-xs font-black">
+                    <button onclick="closeAddSongModal()" class="px-4 py-2.5 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200">취소</button>
+                    <button onclick="submitNewSong()" class="px-5 py-2.5 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500">노래 등록</button>
                 </div>
             </div>
         </div>
 
         <!-- Add Award Modal -->
-        <div id="add-award-modal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
-            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-sm p-6 transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400">
+        <div id="add-award-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-md p-6 border-4 border-black dark:border-amber-400">
                 <div class="flex justify-between items-center mb-4 border-b-2 border-black dark:border-amber-400 pb-3">
-                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-500"></i> 수상 및 기록 추가</h3>
-                    <button onclick="closeAddAwardModal()" class="text-amber-500 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <h3 class="text-lg font-black text-brand-dark dark:text-white flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-500"></i> 수상 기록 추가</h3>
+                    <button onclick="closeAddAwardModal()" class="text-amber-500 hover:text-black dark:hover:text-amber-300"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <div class="space-y-4 font-bold text-xs">
+                <div class="space-y-3 font-bold text-xs">
                     <div>
-                        <label class="block text-gray-500 dark:text-amber-200 mb-1.5">연도</label>
-                        <input type="text" id="new-award-year" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none" placeholder="예: 2025">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">연도/날짜</label>
+                        <input type="text" id="new-award-year" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none" placeholder="예: 2024.12">
                     </div>
                     <div>
-                        <label class="block text-gray-500 dark:text-amber-200 mb-1.5">수상/기록 제목</label>
-                        <input type="text" id="new-award-title" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none" placeholder="예: SOOP 베스트 BJ 선정">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">수상 및 타이틀</label>
+                        <input type="text" id="new-award-title" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none" placeholder="수상 명칭">
                     </div>
                     <div>
-                        <label class="block text-gray-500 dark:text-amber-200 mb-1.5">상세 내용 (선택)</label>
-                        <input type="text" id="new-award-desc" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 rounded-xl p-3 outline-none" placeholder="예: 워냥이들의 사랑으로 수상 달성!">
+                        <label class="block text-gray-500 dark:text-amber-200 mb-1">상세 설명</label>
+                        <input type="text" id="new-award-desc" class="w-full bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 p-2.5 rounded-xl outline-none" placeholder="상세 기록 내용">
                     </div>
                 </div>
-                <div class="mt-6 flex justify-end gap-2 text-xs font-black">
-                    <button onclick="closeAddAwardModal()" class="px-4 py-3 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200">취소</button>
-                    <button onclick="submitNewAward()" class="px-4 py-3 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500">등록 완료</button>
+                <div class="mt-5 flex justify-end gap-2 text-xs font-black">
+                    <button onclick="closeAddAwardModal()" class="px-4 py-2.5 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200">취소</button>
+                    <button onclick="submitNewAward()" class="px-5 py-2.5 rounded-xl bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-500">수상기록 등록</button>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <!-- Footer Section -->
-    <footer class="bg-brand-dark text-white py-10 text-center mt-auto border-t-4 border-amber-400 space-y-3">
-        <p class="text-[11px] text-amber-500 font-mono tracking-tighter uppercase">© 2026 NANWONY STREAMER. All rights reserved.</p>
-        <p class="text-[11px] text-amber-600 font-mono">Special Profile Page for Nanwony 💛</p>
-        <p class="text-xs text-amber-200/80 font-cute tracking-wider pt-1">
-            made by. 연주아 🍀
-        </p>
+    <!-- Footer -->
+    <footer class="bg-white/80 dark:bg-brand-dark/90 border-t-2 border-amber-400/30 py-6 text-center text-xs font-bold text-gray-500 dark:text-amber-200/70 relative z-10">
+        <div class="max-w-4xl mx-auto px-4">
+            <p>© 2026 NANWONY profile dashboard. All rights reserved. 🐾💛</p>
+        </div>
     </footer>
 
-    <!-- Visual Clipboard Notification Toast -->
-    <div id="toast-message" class="fixed bottom-6 right-6 z-[150] bg-black text-amber-300 border-2 border-amber-400 font-black text-sm py-3.5 px-6 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
-        <span id="toast-text">복사 완료! 🐾</span>
-    </div>
-
+    <!-- Firebase Script & App Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc, 
+            setDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            collection, 
+            query, 
+            getDocs 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Setup & Initialization
+        // Global Firebase Setup
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanwony-profile-app';
-        const firebaseConfig = {
-            apiKey: "AIzaSyDdIZXL1MFrWHnYhZoySg7OXmyrCwmo7GA",
-            authDomain: "nanwony-db.firebaseapp.com",
-            projectId: "nanwony-db",
-            storageBucket: "nanwony-db.firebasestorage.app",
-            messagingSenderId: "196117156066",
-            appId: "1:196117156066:web:83cdb34a52771bc1f14ebb"
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "",
+            authDomain: "nanwony-app.firebaseapp.com",
+            projectId: "nanwony-app",
+            storageBucket: "nanwony-app.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const getDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'nanwony-site-data', 'main');
+        // Global State Variables
+        window.isAdmin = false;
+        window.currentUser = null;
+        window.activeModalUserId = null;
+        window.selectedGenre = '전체';
+        window.songSearchQuery = '';
 
-        async function authenticate() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                return true;
-            } catch (error) {
-                console.warn("Auth deferred:", error.message);
-                return false;
-            }
-        }
-
-        const defaultSectionVisibility = {
-            intro: true,
-            dday: true,
-            broadcast: true,
-            likes: true,
-            notice: true,
-            schedule: true,
-            pledge: true,
-            fortune: true,
-            homework: true,
-            songlist: true,
-            awards: true
-        };
-
-        const defaultUpboData = [
-            { id: 'whiteone325', nickname: '워냥대장', items: [{ name: '자필 손편지 방셀', count: 2 }, { name: '모닝콜 녹음 선물', count: 1 }] },
-            { id: 'fan_cat_1', nickname: '노랑고양이', items: [{ name: '노래 우선신청권', count: 3 }] }
-        ];
-
-        const defaultNoticeData = [
-            { type: '필독', date: '2026.07.20', content: '난워니의 💛 옐로우&블랙 방송 스케줄 및 워냥이 숙제판이 업데이트 되었습니다! 🐾', typeColor: 'red', link: '' },
-            { type: '공지', date: '2026.07.15', content: '난워니 유튜브 보컬 신곡 커버가 올라왔어요! 많은 시청 부탁드립니다! ▶', typeColor: 'blue', link: 'https://www.youtube.com/@난워니' },
-            { type: '일상', date: '2026.07.10', content: '오늘도 방송에 와주신 모든 워냥이분들 고마워요 💛', typeColor: 'gray', link: '' }
-        ];
-
-        const defaultScheduleData = [
-            { day: '월', content: '워냥이들 컴온! 냥냥 수다 라디오 💛', color: 'gray', isRest: false },
-            { day: '화', content: '신나는 난워니 라이브 노래방 🎤', color: 'blue', isRest: false },
-            { day: '수', content: '난워니 재충전 휴방 데이 💤', color: 'green', isRest: true },
-            { day: '목', content: '힐링 게임 & 냥냥 소통 🎮', color: 'gray', isRest: false },
-            { day: '금', content: '워냥이 신청곡 100% 라이브 🎵', color: 'blue', isRest: false },
-            { day: '토', content: '주말 특별 합방 & 팬소통 💫', color: 'gray', isRest: false },
-            { day: '일', content: '주간 정리 및 힐링 라디오 🌟', color: 'red', isRest: false }
-        ];
-
-        const defaultProfileData = {
-            bannerUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop",
-            introText: "안녕하세요! 노랑노랑 냥냥한 매력의 버추얼 스트리머 난워니입니다! 🐾💛\n따뜻한 노래와 힐링 소통으로 워냥이들의 매일을 행복하게 만들어 드릴게요! 항상 고마워요 💛",
-            tags: ["버추얼스트리머", "워냥이", "노란고양이", "보컬라이브", "힐링소통"],
-            broadcast: { time: "매일 밤 8시 30분 생방송 (매주 수요일 정기 휴방!)", content: "달콤 보컬 커버 · 잔잔 오디오 소통 · 냥냥 가창", game: "힐링 퍼즐 · 시청자 참여 게임 · 감성 스토리" },
-            likes: ["노래 부르기 🎤", "워냥이들 🐾", "맛있는 과자 🍪"],
-            dislikes: ["공포 게임 👻", "매운 음식 🌶️", "무례한 채팅 ❌"],
-            ddays: [
-                { title: "🎂 난워니 생일", type: "birthday", date: "03-25" },
-                { title: "🎄 감동의 데뷔일", type: "anniversary", date: "2024-12-24" }
-            ],
-            socials: {
-                soop: "https://www.sooplive.com/station/whiteone325",
-                youtube: "https://www.youtube.com/@난워니",
-                cafe: "https://cafe.naver.com/nanwony",
-                fancim: "https://fancim.me/celeb/profile.aspx?cu_id=nanwony"
+        // Store Firestore Data
+        window.stateData = {
+            profile: {
+                banner: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop",
+                avatar: "https://stimg.afreecatv.com/LOGO/wh/whiteone325/whiteone325.jpg",
+                intro: "안녕하세요! 워냥이들의 힐링 고양이 보컬 난워니입니다 🐾💛\n매일 밤 따뜻한 노래와 웃음으로 함께해요!",
+                broadcastTime: "매일 저녁 8시 ON AIR",
+                broadcastContent: "노래 방송, 소통 힐링, 게임",
+                broadcastGame: "League of Legends, 종합게임",
+                likes: ["노래하기", "워냥이들", "맛있는 젤리", "집콕"],
+                dislikes: ["벌레", "야채", "지각하기"],
+                tags: ["#버추얼", "#고양이보컬", "#소통스트리머", "#난워니"],
+                ddays: [
+                    { title: "첫 방송 데뷔일", date: "2023-12-24" },
+                    { title: "워냥이 탄생일", date: "2024-03-25" }
+                ]
             },
-            sectionVisibility: defaultSectionVisibility
+            notices: [
+                { id: "1", title: "🐾 이번 주 특별 노래 방송 안내", content: "금요일 저녁 8시 워냥이 우대 노래 방송이 진행됩니다!", date: "2026.07.28" }
+            ],
+            schedules: [
+                { day: "월요일", text: "정기 휴방 💤" },
+                { day: "화요일", text: "오후 8시: 소통 & 신청곡 🎵" },
+                { day: "수요일", text: "오후 8시: 게임 데이 🎮" },
+                { day: "목요일", text: "오후 8시: 노래책 정복 🎤" },
+                { day: "금요일", text: "오후 8시: 힐링 라디오 📻" },
+                { day: "토요일", text: "오후 7시: 주말 특별 컨텐츠 ✨" },
+                { day: "일요일", text: "오후 8시: 방셀 / 숙제 검사 🐾" }
+            ],
+            pledgeText: "📜 [난워니 API 공약 수칙]\n1. 별풍선 100개: 앙증맞은 고양이 애교 🐾\n2. 별풍선 500개: 즉석 노래 신청곡 1곡 🎤\n3. 별풍선 1000개: 방셀 / 수제 서명 카드 전달 💌\n4. 즐겁고 클린한 방송 문화를 만들어갑니다!",
+            visibility: {
+                profile: true,
+                notice: true,
+                schedule: true,
+                pledge: true,
+                fortune: true,
+                homework: true,
+                songlist: true,
+                awards: true
+            },
+            homeworkUsers: [],
+            songs: [
+                { id: "s1", genre: "귀여운곡", title: "고양이 송", artist: "Virtual Singer", level: 5 },
+                { id: "s2", genre: "발라드/감성", title: "밤편지", artist: "아이유", level: 5 },
+                { id: "s3", genre: "J-Pop/애니", title: "귀칼 OST", artist: "LiSA", level: 4 },
+                { id: "s4", genre: "댄스/신나는곡", title: "Supernova", artist: "aespa", level: 4 }
+            ],
+            awards: [
+                { id: "a1", year: "2024.12", title: "SOOP 버추얼 신인상 후보", desc: "워냥이들과 함께 달성한 소중한 신인상 노미네이트" },
+                { id: "a2", year: "2025.03", title: "애청자 10,000명 돌파", desc: "공식 방송국 구독자 및 팬클럽 만명 마일스톤 달성" }
+            ]
         };
 
-        const defaultSongsData = [
-            { title: "냥냥송", artist: "난워니", genre: "귀여운곡", rating: 5 },
-            { title: "너의 의미", artist: "아이유", genre: "발라드/감성", rating: 5 },
-            { title: "Lemon", artist: "Yonezu Kenshi", genre: "J-Pop/애니", rating: 4 },
-            { title: "신호등", artist: "이무진", genre: "댄스/신나는곡", rating: 5 }
-        ];
-
-        const defaultPledgeText = "🐾 별풍선 100개 : 냥냥 모에모에 큥 애교 💕\n🐾 별풍선 500개 : 고양이 귀 헤어밴드 착용 방송 🐱\n🐾 별풍선 1,000개 : 워냥이 전용 모닝콜 녹음 선물 ⏰\n🐾 별풍선 3,000개 : 자필 손편지 + 시크릿 방셀 💌";
-
-        const defaultAwardsData = [
-            { year: '2025', title: '데뷔 100일 기념 라이브 🎂', desc: '워냥이들과 함께한 첫번째 특별 100일 기념 파티!' },
-            { year: '2025', title: 'SOOP 버추얼 랭킹 진입 🎉', desc: '워냥이들의 열렬한 응원으로 랭킹 진입 달성!' }
-        ];
-
-        let globalUpboData = [];
-        let globalNoticeData = [];
-        let globalScheduleData = [];
-        let globalProfileData = {};
-        let globalSongsData = [];
-        let globalPledgeText = defaultPledgeText;
-        let globalAwardsData = [];
-
-        let isAdminMode = false;
-        let currentEditingUserId = null;
-        let deleteConfirmState = false;
-        let currentSelectedGenre = '전체';
-
-        // Helper Utilities
-        function safeGetStorage(key, defaultValue) {
-            try {
-                const item = window.localStorage.getItem(key);
-                return item ? JSON.parse(item) : defaultValue;
-            } catch (e) {
-                return defaultValue;
-            }
-        }
-        function safeSetStorage(key, value) {
-            try {
-                window.localStorage.setItem(key, JSON.stringify(value));
-            } catch (e) {}
-        }
-
-        async function fetchSiteData() {
-            const loadingInd = document.getElementById('loading-indicator');
-            if (loadingInd) loadingInd.classList.remove('hidden');
-
-            const isAuthed = await authenticate();
-            
-            if (isAuthed && navigator.onLine) {
-                try {
-                    const docRef = getDocRef();
-                    const docSnap = await getDoc(docRef);
-
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        globalUpboData = data.upbo || defaultUpboData;
-                        globalNoticeData = data.notice || defaultNoticeData;
-                        globalScheduleData = data.schedule || defaultScheduleData;
-                        globalProfileData = data.profile || defaultProfileData;
-                        if (!globalProfileData.sectionVisibility) {
-                            globalProfileData.sectionVisibility = defaultSectionVisibility;
-                        }
-                        globalSongsData = data.songs || defaultSongsData;
-                        globalPledgeText = data.pledgeText || defaultPledgeText;
-                        globalAwardsData = data.awards || defaultAwardsData;
-
-                        safeSetStorage('nanwonyUpbo', globalUpboData);
-                        safeSetStorage('nanwonyNotice', globalNoticeData);
-                        safeSetStorage('nanwonySchedule', globalScheduleData);
-                        safeSetStorage('nanwonyProfile', globalProfileData);
-                        safeSetStorage('nanwonySongs', globalSongsData);
-                        safeSetStorage('nanwonyPledgeText', globalPledgeText);
-                        safeSetStorage('nanwonyAwards', globalAwardsData);
-                    } else {
-                        const initialPayload = {
-                            upbo: defaultUpboData,
-                            notice: defaultNoticeData,
-                            schedule: defaultScheduleData,
-                            profile: defaultProfileData,
-                            songs: defaultSongsData,
-                            pledgeText: defaultPledgeText,
-                            awards: defaultAwardsData
-                        };
-                        await setDoc(docRef, initialPayload);
-                        fallbackToDefault();
-                    }
-                } catch (error) {
-                    console.warn("Firestore sync fallback to local:", error.message);
-                    fallbackToLocal();
-                }
+        // Listen to Firebase Auth state
+        onAuthStateChanged(auth, (user) => {
+            if (user && !user.isAnonymous) {
+                window.isAdmin = true;
+                window.currentUser = user;
+                updateAdminUI(true, user.email);
+                showToast(`관리자 로그인 성공 (${user.email})`);
             } else {
-                fallbackToLocal();
+                window.isAdmin = false;
+                window.currentUser = null;
+                updateAdminUI(false);
             }
-            if (loadingInd) loadingInd.classList.add('hidden');
-        }
+        });
 
-        function fallbackToDefault() {
-            globalUpboData = defaultUpboData;
-            globalNoticeData = defaultNoticeData;
-            globalScheduleData = defaultScheduleData;
-            globalProfileData = defaultProfileData;
-            globalSongsData = defaultSongsData;
-            globalPledgeText = defaultPledgeText;
-            globalAwardsData = defaultAwardsData;
-        }
-
-        function fallbackToLocal() {
-            globalUpboData = safeGetStorage('nanwonyUpbo', defaultUpboData);
-            globalNoticeData = safeGetStorage('nanwonyNotice', defaultNoticeData);
-            globalScheduleData = safeGetStorage('nanwonySchedule', defaultScheduleData);
-            globalProfileData = safeGetStorage('nanwonyProfile', defaultProfileData);
-            if (!globalProfileData.sectionVisibility) {
-                globalProfileData.sectionVisibility = defaultSectionVisibility;
-            }
-            globalSongsData = safeGetStorage('nanwonySongs', defaultSongsData);
-            globalPledgeText = safeGetStorage('nanwonyPledgeText', defaultPledgeText);
-            globalAwardsData = safeGetStorage('nanwonyAwards', defaultAwardsData);
-        }
-
-        async function updateFirestore(key, data) {
-            safeSetStorage(`nanwony${key.charAt(0).toUpperCase() + key.slice(1)}`, data);
-            if (!auth.currentUser) return;
-            if (navigator.onLine) {
-                try {
-                    const docRef = getDocRef();
-                    await updateDoc(docRef, { [key]: data });
-                } catch (error) {
-                    console.warn("Firestore update error:", error.message);
-                }
-            }
-        }
-
-        function applySectionVisibility() {
-            const visibility = globalProfileData.sectionVisibility || defaultSectionVisibility;
-
-            // 1. Profile sub-cards
-            const cardIntro = document.getElementById('card-profile-intro');
-            if (cardIntro) cardIntro.classList.toggle('hidden', !visibility.intro);
-
-            const cardDday = document.getElementById('card-profile-dday');
-            if (cardDday) cardDday.classList.toggle('hidden', !visibility.dday);
-
-            const introDdayGrid = document.getElementById('intro-dday-grid');
-            if (introDdayGrid) {
-                introDdayGrid.classList.toggle('hidden', !visibility.intro && !visibility.dday);
-            }
-
-            const cardBroadcast = document.getElementById('card-profile-broadcast');
-            if (cardBroadcast) cardBroadcast.classList.toggle('hidden', !visibility.broadcast);
-
-            const cardLikes = document.getElementById('card-profile-likes');
-            if (cardLikes) cardLikes.classList.toggle('hidden', !visibility.likes);
-
-            // 2. Main sections & Navigation links
-            const sectionNotice = document.getElementById('notice');
-            if (sectionNotice) sectionNotice.classList.toggle('hidden', !visibility.notice);
-            document.getElementById('nav-link-notice')?.classList.toggle('hidden', !visibility.notice);
-            document.getElementById('mobile-nav-notice')?.classList.toggle('hidden', !visibility.notice);
-
-            const sectionSchedule = document.getElementById('schedule');
-            if (sectionSchedule) sectionSchedule.classList.toggle('hidden', !visibility.schedule);
-            document.getElementById('nav-link-schedule')?.classList.toggle('hidden', !visibility.schedule);
-            document.getElementById('mobile-nav-schedule')?.classList.toggle('hidden', !visibility.schedule);
-
-            const noticeScheduleGrid = document.getElementById('notice-schedule-grid');
-            if (noticeScheduleGrid) {
-                noticeScheduleGrid.classList.toggle('hidden', !visibility.notice && !visibility.schedule);
-            }
-
-            const sectionPledge = document.getElementById('pledge');
-            if (sectionPledge) sectionPledge.classList.toggle('hidden', !visibility.pledge);
-            document.getElementById('nav-link-pledge')?.classList.toggle('hidden', !visibility.pledge);
-            document.getElementById('mobile-nav-pledge')?.classList.toggle('hidden', !visibility.pledge);
-
-            const sectionFortune = document.getElementById('fortune');
-            if (sectionFortune) sectionFortune.classList.toggle('hidden', !visibility.fortune);
-            document.getElementById('nav-link-fortune')?.classList.toggle('hidden', !visibility.fortune);
-            document.getElementById('mobile-nav-fortune')?.classList.toggle('hidden', !visibility.fortune);
-
-            const sectionHomework = document.getElementById('homework');
-            if (sectionHomework) sectionHomework.classList.toggle('hidden', !visibility.homework);
-            document.getElementById('nav-link-homework')?.classList.toggle('hidden', !visibility.homework);
-            document.getElementById('mobile-nav-homework')?.classList.toggle('hidden', !visibility.homework);
-
-            const sectionSonglist = document.getElementById('songlist');
-            if (sectionSonglist) sectionSonglist.classList.toggle('hidden', !visibility.songlist);
-            document.getElementById('nav-link-songlist')?.classList.toggle('hidden', !visibility.songlist);
-            document.getElementById('mobile-nav-songlist')?.classList.toggle('hidden', !visibility.songlist);
-
-            const sectionAwards = document.getElementById('awards');
-            if (sectionAwards) sectionAwards.classList.toggle('hidden', !visibility.awards);
-            document.getElementById('nav-link-awards')?.classList.toggle('hidden', !visibility.awards);
-            document.getElementById('mobile-nav-awards')?.classList.toggle('hidden', !visibility.awards);
-        }
-
-        function openSectionToggleModal() {
-            const modal = document.getElementById('section-toggle-modal');
-            renderSectionToggleList();
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modal.querySelector('div').classList.remove('scale-95');
-                modal.querySelector('div').classList.add('scale-100');
-            });
-        }
-
-        function closeSectionToggleModal() {
-            const modal = document.getElementById('section-toggle-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-        }
-
-        function renderSectionToggleList() {
-            const list = document.getElementById('section-toggle-list');
-            if (!list) return;
-            const visibility = globalProfileData.sectionVisibility || defaultSectionVisibility;
-
-            const items = [
-                { id: 'intro', name: '🐾 자기소개 문구' },
-                { id: 'dday', name: '🎉 함께한 순간들 (기념일)' },
-                { id: 'broadcast', name: '📻 LIVE ON AIR INFO' },
-                { id: 'likes', name: '💛 LOVE & HATE LIST' },
-                { id: 'notice', name: '📢 공지사항' },
-                { id: 'schedule', name: '📅 주간 일정' },
-                { id: 'pledge', name: '📜 API 공약 안내' },
-                { id: 'fortune', name: '🔮 오늘의 고양이 운세' },
-                { id: 'homework', name: '🐾 방셀 숙제 현황' },
-                { id: 'songlist', name: '🎵 노래책' },
-                { id: 'awards', name: '🏆 수상내역 및 아카이브' }
+        // Update UI components depending on Admin status
+        window.updateAdminUI = function(isLoggedIn, email = "") {
+            const adminBtns = [
+                'admin-section-toggle-btn', 'mobile-admin-section-toggle-btn',
+                'admin-profile-edit-btn', 'admin-notice-edit-btn', 'admin-schedule-edit-btn',
+                'admin-edit-pledge-text-btn', 'admin-add-user-btn', 'admin-add-song-btn',
+                'admin-add-award-btn', 'mobile-menu-admin-toggle-btn'
             ];
 
-            list.innerHTML = items.map(item => `
-                <div class="flex items-center justify-between bg-amber-50 dark:bg-black/40 border border-amber-400/30 p-3 rounded-xl">
-                    <span class="text-brand-dark dark:text-amber-100 text-xs font-black">${item.name}</span>
+            adminBtns.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (isLoggedIn) el.classList.remove('hidden');
+                    else el.classList.add('hidden');
+                }
+            });
+
+            const topBtnText = document.getElementById('top-admin-btn-text');
+            if (topBtnText) {
+                topBtnText.innerText = isLoggedIn ? "로그아웃" : "관리자 로그인";
+            }
+
+            renderHomeworkGrid();
+            renderSongList();
+            renderAwardsList();
+        };
+
+        // Firebase Auth Login Triggered from Form
+        window.handleAdminLoginSubmit = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value.trim();
+            const password = document.getElementById('admin-password').value.trim();
+
+            if (!email || !password) {
+                showToast("이메일과 비밀번호를 입력해주세요.");
+                return;
+            }
+
+            const btn = document.getElementById('admin-login-submit-btn');
+            btn.disabled = true;
+            btn.innerText = "인증 중...";
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                closeAdminLoginModal();
+            } catch (error) {
+                console.error("Firebase Login Error:", error);
+                showToast("로그인 실패: 이메일과 비밀번호를 확인해주세요.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "인증 로그인";
+            }
+        };
+
+        // Top right button click handler
+        window.handleAdminAuthButtonClick = async function() {
+            if (window.isAdmin) {
+                if (confirm("로그아웃 하시겠습니까?")) {
+                    try {
+                        await signOut(auth);
+                        showToast("로그아웃 되었습니다.");
+                    } catch (err) {
+                        showToast("로그아웃 실패");
+                    }
+                }
+            } else {
+                openAdminLoginModal();
+            }
+        };
+
+        // Firestore paths setup
+        const getPublicDoc = (col, docId) => doc(db, 'artifacts', appId, 'public', 'data', col, docId);
+        const getPublicCollection = (col) => collection(db, 'artifacts', appId, 'public', 'data', col);
+
+        // Real-time Firestore Sync
+        function initFirestoreListeners() {
+            // Profile Sync
+            onSnapshot(getPublicDoc('settings', 'profile'), (snapshot) => {
+                if (snapshot.exists()) {
+                    window.stateData.profile = snapshot.data();
+                    renderProfile();
+                } else {
+                    renderProfile();
+                }
+            }, (err) => console.warn("Profile sync listener notice:", err));
+
+            // Notice Sync
+            onSnapshot(getPublicDoc('settings', 'notices'), (snapshot) => {
+                if (snapshot.exists()) {
+                    window.stateData.notices = snapshot.data().items || [];
+                    renderNotices();
+                } else {
+                    renderNotices();
+                }
+            }, (err) => console.warn("Notice sync notice:", err));
+
+            // Schedule Sync
+            onSnapshot(getPublicDoc('settings', 'schedules'), (snapshot) => {
+                if (snapshot.exists()) {
+                    window.stateData.schedules = snapshot.data().items || [];
+                    renderSchedules();
+                } else {
+                    renderSchedules();
+                }
+            }, (err) => console.warn("Schedule sync notice:", err));
+
+            // Pledge Sync
+            onSnapshot(getPublicDoc('settings', 'pledge'), (snapshot) => {
+                if (snapshot.exists()) {
+                    window.stateData.pledgeText = snapshot.data().text || window.stateData.pledgeText;
+                    renderPledge();
+                } else {
+                    renderPledge();
+                }
+            }, (err) => console.warn("Pledge sync notice:", err));
+
+            // Visibility Sync
+            onSnapshot(getPublicDoc('settings', 'visibility'), (snapshot) => {
+                if (snapshot.exists()) {
+                    window.stateData.visibility = snapshot.data();
+                    applyVisibility();
+                } else {
+                    applyVisibility();
+                }
+            }, (err) => console.warn("Visibility sync notice:", err));
+
+            // Homework Users Sync
+            onSnapshot(getPublicCollection('homework'), (snapshot) => {
+                const users = [];
+                snapshot.forEach(docSnap => {
+                    users.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                if (users.length > 0) window.stateData.homeworkUsers = users;
+                renderHomeworkGrid();
+            }, (err) => console.warn("Homework sync notice:", err));
+
+            // Songs Sync
+            onSnapshot(getPublicCollection('songs'), (snapshot) => {
+                const songs = [];
+                snapshot.forEach(docSnap => {
+                    songs.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                if (songs.length > 0) window.stateData.songs = songs;
+                renderSongList();
+            }, (err) => console.warn("Songs sync notice:", err));
+
+            // Awards Sync
+            onSnapshot(getPublicCollection('awards'), (snapshot) => {
+                const awards = [];
+                snapshot.forEach(docSnap => {
+                    awards.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                if (awards.length > 0) window.stateData.awards = awards;
+                renderAwardsList();
+            }, (err) => console.warn("Awards sync notice:", err));
+        }
+
+        // Render Functions
+        window.renderProfile = function() {
+            const p = window.stateData.profile;
+            if (document.getElementById('profile-banner-img')) document.getElementById('profile-banner-img').src = p.banner;
+            if (document.getElementById('profile-avatar-img')) document.getElementById('profile-avatar-img').src = p.avatar;
+            if (document.getElementById('profile-intro-text')) document.getElementById('profile-intro-text').innerText = p.intro;
+            if (document.getElementById('profile-broadcast-time')) document.getElementById('profile-broadcast-time').innerText = p.broadcastTime;
+            if (document.getElementById('profile-broadcast-content')) document.getElementById('profile-broadcast-content').innerText = p.broadcastContent;
+            if (document.getElementById('profile-broadcast-game')) document.getElementById('profile-broadcast-game').innerText = p.broadcastGame;
+
+            // Likes
+            const likesContainer = document.getElementById('profile-likes-container');
+            if (likesContainer) {
+                likesContainer.innerHTML = p.likes.map(item => `<span class="px-3 py-1 bg-amber-100 dark:bg-black text-amber-900 dark:text-amber-300 rounded-xl text-xs font-bold border border-amber-300/40">💛 ${item}</span>`).join('');
+            }
+
+            // Dislikes
+            const dislikesContainer = document.getElementById('profile-dislikes-container');
+            if (dislikesContainer) {
+                dislikesContainer.innerHTML = p.dislikes.map(item => `<span class="px-3 py-1 bg-red-50 dark:bg-black text-red-600 dark:text-red-400 rounded-xl text-xs font-bold border border-red-300/40">❌ ${item}</span>`).join('');
+            }
+
+            // Tags
+            const tagsContainer = document.getElementById('profile-tags-container');
+            if (tagsContainer) {
+                tagsContainer.innerHTML = p.tags.map(tag => `<span class="text-xs font-bold text-amber-600 dark:text-amber-400">${tag}</span>`).join(' ');
+            }
+
+            // D-Days
+            const ddayContainer = document.getElementById('dday-container');
+            if (ddayContainer && p.ddays) {
+                const today = new Date();
+                ddayContainer.innerHTML = p.ddays.map(item => {
+                    const diff = Math.floor((today - new Date(item.date)) / (1000 * 60 * 60 * 24));
+                    return `
+                        <div class="flex items-center justify-between p-3 bg-amber-50 dark:bg-black/50 rounded-xl border border-amber-400/20 text-xs font-bold">
+                            <span class="text-gray-700 dark:text-amber-200">🐾 ${item.title}</span>
+                            <span class="bg-amber-400 text-black px-2.5 py-1 rounded-lg font-black">D+${diff}일</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        };
+
+        window.renderNotices = function() {
+            const list = document.getElementById('notice-list');
+            if (!list) return;
+            const notices = window.stateData.notices || [];
+            if (notices.length === 0) {
+                list.innerHTML = `<li class="text-gray-400 text-xs text-center py-4">등록된 공지사항이 없습니다.</li>`;
+                return;
+            }
+            list.innerHTML = notices.map(item => `
+                <li class="p-3 bg-amber-50 dark:bg-black/40 rounded-xl border border-amber-400/20 space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="font-black text-brand-dark dark:text-amber-300">${item.title}</span>
+                        <span class="text-[10px] text-gray-400">${item.date}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-amber-100 font-semibold">${item.content}</p>
+                </li>
+            `).join('');
+        };
+
+        window.renderSchedules = function() {
+            const list = document.getElementById('schedule-list');
+            if (!list) return;
+            const schs = window.stateData.schedules || [];
+            list.innerHTML = schs.map(item => `
+                <div class="flex items-center justify-between p-2.5 bg-amber-50 dark:bg-black/40 rounded-xl border border-amber-400/20 text-xs font-bold">
+                    <span class="text-amber-600 dark:text-amber-400 font-black w-16">${item.day}</span>
+                    <span class="text-gray-700 dark:text-amber-100 flex-grow">${item.text}</span>
+                </div>
+            `).join('');
+        };
+
+        window.renderPledge = function() {
+            const el = document.getElementById('pledge-content-text');
+            if (el) el.innerText = window.stateData.pledgeText;
+        };
+
+        window.renderHomeworkGrid = function() {
+            const grid = document.getElementById('upbo-grid');
+            if (!grid) return;
+
+            const query = (document.getElementById('upbo-search')?.value || '').toLowerCase();
+            const users = (window.stateData.homeworkUsers || []).filter(u => u.nickname.toLowerCase().includes(query));
+
+            document.getElementById('upbo-date').innerText = new Date().toLocaleDateString();
+
+            if (users.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-8 text-xs text-gray-400 font-bold">등록된 워냥이 숙제가 없습니다.</div>`;
+                return;
+            }
+
+            grid.innerHTML = users.map(user => {
+                const total = user.items ? user.items.length : 0;
+                const done = user.items ? user.items.filter(i => i.done).length : 0;
+                const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+
+                return `
+                    <div onclick="openUpboEditModal('${user.id}')" class="bg-amber-50 dark:bg-black/50 border-2 border-black dark:border-amber-400/50 rounded-2xl p-3.5 hover:scale-105 transition-all cursor-pointer flex flex-col justify-between shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <img src="https://stimg.afreecatv.com/LOGO/${user.soopId ? user.soopId.slice(0,2) : 'wh'}/${user.soopId || 'whiteone325'}/${user.soopId || 'whiteone325'}.jpg" 
+                                     onerror="this.src='https://stimg.afreecatv.com/LOGO/wh/whiteone325/whiteone325.jpg'" 
+                                     class="w-8 h-8 rounded-full border border-black object-cover" alt="Avatar">
+                                <div class="overflow-hidden">
+                                    <h4 class="font-black text-xs text-brand-dark dark:text-amber-200 truncate">${user.nickname}</h4>
+                                    <span class="text-[10px] text-gray-400 block truncate">@${user.soopId || 'nanwony'}</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 mb-2 overflow-hidden border border-black/20">
+                                <div class="bg-amber-400 h-2 rounded-full transition-all duration-300" style="width: ${percent}%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] font-black">
+                            <span class="text-amber-600 dark:text-amber-400">${done}/${total} 완료</span>
+                            <span class="bg-amber-400 text-black px-1.5 py-0.5 rounded">${percent}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.renderSongList = function() {
+            const tbody = document.getElementById('song-list-body');
+            if (!tbody) return;
+
+            const genre = window.selectedGenre;
+            const query = window.songSearchQuery.toLowerCase();
+
+            const filtered = (window.stateData.songs || []).filter(s => {
+                const matchGenre = (genre === '전체') || (s.genre === genre);
+                const matchQuery = s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query);
+                return matchGenre && matchQuery;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-xs text-gray-400">검색 조건에 해당되는 노래가 없습니다.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(s => {
+                const stars = '★'.repeat(s.level || 5) + '☆'.repeat(5 - (s.level || 5));
+                return `
+                    <tr class="hover:bg-amber-50 dark:hover:bg-black/30 transition-colors border-b border-amber-400/20">
+                        <td class="px-4 py-3"><span class="px-2 py-1 bg-amber-100 dark:bg-black text-amber-900 dark:text-amber-300 rounded-lg text-[10px] font-black border border-amber-400/30">${s.genre}</span></td>
+                        <td class="px-4 py-3 font-bold text-brand-dark dark:text-amber-100">${s.title}</td>
+                        <td class="px-4 py-3 text-gray-500 dark:text-amber-200 text-xs">${s.artist}</td>
+                        <td class="px-4 py-3 text-center text-amber-500 text-xs">${stars}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="requestSong('${s.title}')" class="bg-amber-400 hover:bg-amber-500 text-black px-2.5 py-1 rounded-lg text-xs font-black border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">신청 🐾</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        window.renderAwardsList = function() {
+            const list = document.getElementById('awards-list');
+            if (!list) return;
+
+            const awards = window.stateData.awards || [];
+            if (awards.length === 0) {
+                list.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">등록된 수상 내역이 없습니다.</p>`;
+                return;
+            }
+
+            list.innerHTML = awards.map(a => `
+                <div class="flex items-start gap-4 p-3.5 bg-amber-50 dark:bg-black/40 rounded-2xl border border-amber-400/30">
+                    <span class="text-xl">🏆</span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-amber-400 text-black px-2 py-0.5 rounded text-[10px] font-black">${a.year}</span>
+                            <h4 class="font-black text-sm text-brand-dark dark:text-amber-200">${a.title}</h4>
+                        </div>
+                        <p class="text-xs text-gray-600 dark:text-amber-100 font-semibold mt-1">${a.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.applyVisibility = function() {
+            const v = window.stateData.visibility;
+            if (!v) return;
+
+            const mapping = {
+                profile: 'profile',
+                notice: 'notice',
+                schedule: 'schedule',
+                pledge: 'pledge',
+                fortune: 'fortune',
+                homework: 'homework',
+                songlist: 'songlist',
+                awards: 'awards'
+            };
+
+            for (let key in mapping) {
+                const el = document.getElementById(mapping[key]);
+                const navLink = document.getElementById(`nav-link-${key}`);
+                const mobLink = document.getElementById(`mobile-nav-${key}`);
+                const isVisible = v[key] !== false;
+
+                if (el) isVisible ? el.classList.remove('hidden') : el.classList.add('hidden');
+                if (navLink) isVisible ? navLink.classList.remove('hidden') : navLink.classList.add('hidden');
+                if (mobLink) isVisible ? mobLink.classList.remove('hidden') : mobLink.classList.add('hidden');
+            }
+        };
+
+        // Cat Fortune Generator
+        window.drawCatFortune = function() {
+            const fortunes = [
+                { title: "대박냥이 운세 🎉", desc: "오늘은 원하는 신청곡이 다 맞춰지는 날! 야식이 무척 맛있는 하루가 됩니다 🐾" },
+                { title: "행운의 발바닥 🐾", desc: "난워니 방송에서 별풍선 리액션의 은총이 쏟아집니다!" },
+                { title: "슬기로운 집사 생활 💛", desc: "마음이 무척 편안하고 따뜻해지는 소통 힐링을 만나게 됩니다." },
+                { title: "골골송 힐링데이 🎵", desc: "음악책 속 난워니의 감성 발라드가 마음을 편안하게 감싸줍니다." }
+            ];
+
+            const item = fortunes[Math.floor(Math.random() * fortunes.length)];
+            const box = document.getElementById('fortune-card-inner');
+            if (box) {
+                box.innerHTML = `
+                    <span class="text-5xl mb-3 block">🔮</span>
+                    <h3 class="text-lg font-black text-black mb-2">${item.title}</h3>
+                    <p class="text-xs font-bold text-amber-950 leading-relaxed">${item.desc}</p>
+                `;
+            }
+            showToast("오늘의 워냥이 운세를 성공적으로 뽑았습니다! 🐾");
+        };
+
+        // Song genre filtering
+        window.filterSongsByGenre = function(genre) {
+            window.selectedGenre = genre;
+            document.querySelectorAll('.genre-tab').forEach(btn => {
+                if (btn.innerText.includes(genre) || (genre === '전체' && btn.innerText.includes('전체'))) {
+                    btn.className = "genre-tab active px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all";
+                } else {
+                    btn.className = "genre-tab px-4 py-2 rounded-xl text-xs font-black bg-amber-100 dark:bg-[#1f1d18] text-[#26241e] dark:text-amber-300 border-2 border-transparent hover:border-black transition-all";
+                }
+            });
+            renderSongList();
+        };
+
+        window.handleSongSearch = function() {
+            window.songSearchQuery = document.getElementById('song-search-input').value;
+            renderSongList();
+        };
+
+        window.requestSong = function(title) {
+            showToast(`'${title}' 신청곡 요청 메시지가 생성되었습니다! 🎤`);
+        };
+
+        // Modal Helpers
+        window.openAdminLoginModal = () => openModal('admin-login-modal');
+        window.closeAdminLoginModal = () => closeModal('admin-login-modal');
+
+        window.openSectionToggleModal = () => {
+            renderSectionToggleList();
+            openModal('section-toggle-modal');
+        };
+        window.closeSectionToggleModal = () => closeModal('section-toggle-modal');
+
+        window.openAddUserModal = () => openModal('add-user-modal');
+        window.closeAddUserModal = () => closeModal('add-user-modal');
+
+        window.openNoticeEditModal = () => {
+            renderNoticeEditList();
+            openModal('notice-edit-modal');
+        };
+        window.closeNoticeEditModal = () => closeModal('notice-edit-modal');
+
+        window.openScheduleEditModal = () => {
+            renderScheduleEditFields();
+            openModal('schedule-edit-modal');
+        };
+        window.closeScheduleEditModal = () => closeModal('schedule-edit-modal');
+
+        window.openProfileEditModal = () => {
+            const p = window.stateData.profile;
+            document.getElementById('edit-profile-banner').value = p.banner || '';
+            document.getElementById('edit-profile-avatar').value = p.avatar || '';
+            document.getElementById('edit-profile-intro').value = p.intro || '';
+            document.getElementById('edit-broadcast-time').value = p.broadcastTime || '';
+            document.getElementById('edit-broadcast-content').value = p.broadcastContent || '';
+            document.getElementById('edit-broadcast-game').value = p.broadcastGame || '';
+            document.getElementById('edit-profile-likes').value = (p.likes || []).join(', ');
+            document.getElementById('edit-profile-dislikes').value = (p.dislikes || []).join(', ');
+            openModal('profile-edit-modal');
+        };
+        window.closeProfileEditModal = () => closeModal('profile-edit-modal');
+
+        window.openEditPledgeTextModal = () => {
+            document.getElementById('pledge-textarea').value = window.stateData.pledgeText;
+            openModal('pledge-edit-modal');
+        };
+        window.closeEditPledgeTextModal = () => closeModal('pledge-edit-modal');
+
+        window.openAddSongModal = () => openModal('add-song-modal');
+        window.closeAddSongModal = () => closeModal('add-song-modal');
+
+        window.openAddAwardModal = () => openModal('add-award-modal');
+        window.closeAddAwardModal = () => closeModal('add-award-modal');
+
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('opacity-0', 'pointer-events-none');
+                const inner = el.firstElementChild;
+                if (inner) inner.classList.remove('scale-95');
+            }
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('opacity-0', 'pointer-events-none');
+                const inner = el.firstElementChild;
+                if (inner) inner.classList.add('scale-95');
+            }
+        }
+
+        // Section Toggle Admin Logic
+        function renderSectionToggleList() {
+            const container = document.getElementById('section-toggle-list');
+            if (!container) return;
+            const vis = window.stateData.visibility;
+
+            const items = [
+                { key: 'profile', name: '대표 프로필 영역' },
+                { key: 'notice', name: '공지사항' },
+                { key: 'schedule', name: '주간 일정' },
+                { key: 'pledge', name: 'API 공약' },
+                { key: 'fortune', name: '오늘의 고양이 운세' },
+                { key: 'homework', name: '방셀 숙제 현황' },
+                { key: 'songlist', name: '난워니 노래책' },
+                { key: 'awards', name: '수상 내역 및 아카이브' }
+            ];
+
+            container.innerHTML = items.map(item => `
+                <div class="flex items-center justify-between p-2.5 bg-amber-50 dark:bg-black/40 rounded-xl border border-amber-400/20">
+                    <span class="text-brand-dark dark:text-amber-100 font-bold">${item.name}</span>
                     <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="toggle-section-${item.id}" ${visibility[item.id] !== false ? 'checked' : ''} class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400 border border-black"></div>
+                        <input type="checkbox" id="toggle-vis-${item.key}" class="sr-only peer" ${vis[item.key] !== false ? 'checked' : ''}>
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400"></div>
                     </label>
                 </div>
             `).join('');
         }
 
-        function saveSectionVisibility() {
-            const visibility = {};
-            const keys = ['intro', 'dday', 'broadcast', 'likes', 'notice', 'schedule', 'pledge', 'fortune', 'homework', 'songlist', 'awards'];
-            
-            keys.forEach(key => {
-                const checkbox = document.getElementById(`toggle-section-${key}`);
-                visibility[key] = checkbox ? checkbox.checked : true;
+        window.saveSectionVisibility = async function() {
+            if (!checkAdminAuthGuard()) return;
+            const vis = {};
+            ['profile', 'notice', 'schedule', 'pledge', 'fortune', 'homework', 'songlist', 'awards'].forEach(key => {
+                const chk = document.getElementById(`toggle-vis-${key}`);
+                if (chk) vis[key] = chk.checked;
             });
 
-            globalProfileData.sectionVisibility = visibility;
-            updateFirestore('profile', globalProfileData);
-            applySectionVisibility();
-            closeSectionToggleModal();
-            showToast("화면 섹션 표시 설정이 반영되었습니다! ⚙️");
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            generateBgGlitter();
-
-            const themeToggleBtns = [document.getElementById('theme-toggle'), document.getElementById('mobile-theme-toggle')];
-            const html = document.documentElement;
-            let savedTheme = 'light';
-            try { savedTheme = window.localStorage.getItem('theme'); } catch(e) {}
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                html.classList.add('dark'); updateIcons(true);
-            } else {
-                html.classList.remove('dark'); updateIcons(false);
-            }
-            themeToggleBtns.forEach(btn => {
-                if (btn) {
-                    btn.addEventListener('click', () => {
-                        html.classList.toggle('dark');
-                        const isDark = html.classList.contains('dark');
-                        try { window.localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e) {}
-                        updateIcons(isDark);
-                    });
-                }
-            });
-            function updateIcons(isDark) {
-                themeToggleBtns.forEach(btn => {
-                    if (btn) {
-                        const icon = btn.querySelector('i');
-                        if (icon) {
-                            if (isDark) { icon.classList.remove('fa-moon'); icon.classList.add('fa-sun'); } 
-                            else { icon.classList.remove('fa-sun'); icon.classList.add('fa-moon'); }
-                        }
-                    }
-                });
-            }
-
-            const mobileBtn = document.getElementById('mobile-menu-btn');
-            if (mobileBtn) {
-                mobileBtn.addEventListener('click', () => {
-                    document.getElementById('mobile-menu').classList.toggle('hidden');
-                });
-            }
-            document.querySelectorAll('#mobile-menu a').forEach(link => {
-                link.addEventListener('click', () => document.getElementById('mobile-menu').classList.add('hidden'));
-            });
-
-            const today = new Date();
-            const dateSpan = document.getElementById('upbo-date');
-            if (dateSpan) {
-                dateSpan.innerText = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-            }
-
-            const searchInput = document.getElementById('upbo-search');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    const keyword = e.target.value.toLowerCase();
-                    const filtered = globalUpboData.filter(user => user.nickname.toLowerCase().includes(keyword) || user.id.toLowerCase().includes(keyword));
-                    renderUpbo(filtered);
-                });
-            }
-
-            await fetchSiteData();
-            
-            renderProfile();
-            renderUpbo(globalUpboData);
-            renderNotice();
-            renderSchedule();
-            renderPledgeText();
-            renderSongList();
-            renderAwards();
-            applySectionVisibility();
-        });
-
-        function generateBgGlitter() {
-            const container = document.getElementById('glitter-bg');
-            if (!container) return;
-            const items = ['🐾', '💛', '✨', '⭐', '🐱'];
-            
-            setInterval(() => {
-                const element = document.createElement('div');
-                element.className = 'sparkle-particle text-sm select-none';
-                element.style.left = Math.random() * 100 + 'vw';
-                element.style.top = '-20px';
-                element.style.fontSize = Math.random() * (22 - 12) + 12 + 'px';
-                element.style.animationDuration = Math.random() * (14 - 7) + 7 + 's';
-                element.style.opacity = Math.random() * 0.6 + 0.1;
-                element.innerText = items[Math.floor(Math.random() * items.length)];
-                
-                container.appendChild(element);
-                setTimeout(() => { element.remove(); }, 14000);
-            }, 1500);
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast-message');
-            const toastText = document.getElementById('toast-text');
-            if (!toast || !toastText) return;
-            
-            toastText.innerText = message;
-            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
-            toast.classList.add('translate-y-0', 'opacity-100');
-            
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-            }, 2500);
-        }
-
-        function linkify(text) {
-            if (!text) return '';
-            const urlPattern = /(https?:\/\/[^\s]+)/g;
-            return text.replace(urlPattern, function(url) {
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-amber-500 font-bold hover:underline inline-flex items-center gap-1 bg-amber-400/10 px-2 py-0.5 rounded-lg text-xs" onclick="event.stopPropagation();">링크 <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>`;
-            });
-        }
-
-        function calculateDDayString(type, dateStr) {
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            
-            if (type === 'birthday') {
-                const cleaned = dateStr.replace(/[^0-9]/g, '-');
-                const parts = cleaned.split('-');
-                if (parts.length < 2) return "날짜 에러";
-                const month = parseInt(parts[0], 10) - 1;
-                const day = parseInt(parts[1], 10);
-                
-                let targetYear = today.getFullYear();
-                let targetDate = new Date(targetYear, month, day);
-                if (targetDate < today) {
-                    targetDate.setFullYear(targetYear + 1);
-                }
-                
-                const diffTime = targetDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays === 0 || (today.getMonth() === month && today.getDate() === day)) {
-                    return '<span class="text-amber-500 font-black animate-bounce block text-sm">난워니 생일 축하해요! 🎂💛</span>';
-                }
-                return `<span class="text-amber-500 font-black text-lg">D-${diffDays}</span>`;
-            } else if (type === 'anniversary') {
-                const cleaned = dateStr.replace(/[^0-9]/g, '-');
-                const parts = cleaned.split('-').filter(p => p !== '');
-                if (parts.length < 3) return "날짜 에러";
-                const targetDate = new Date(parts[0], parseInt(parts[1], 10) - 1, parts[2]);
-                
-                const diffTime = today - targetDate;
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                if (diffDays <= 0) return `<span class="text-gray-400 text-xs">데뷔 전</span>`;
-                return `<span class="text-brand-dark dark:text-white font-black text-lg">${diffDays}일째</span>`;
-            } else {
-                const cleaned = dateStr.replace(/[^0-9]/g, '-');
-                const parts = cleaned.split('-').filter(p => p !== '');
-                if (parts.length < 3) return "날짜 에러";
-                const targetDate = new Date(parts[0], parseInt(parts[1], 10) - 1, parts[2]);
-                targetDate.setHours(0,0,0,0);
-                
-                const diffTime = targetDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (diffDays === 0) {
-                    return '<span class="text-amber-500 font-black animate-pulse text-sm">D-DAY! 🐾</span>';
-                } else if (diffDays > 0) {
-                    return `<span class="text-amber-500 font-black text-lg">D-${diffDays}</span>`;
-                } else {
-                    return `<span class="text-gray-400 text-xs">완료 (D+${Math.abs(diffDays)})</span>`;
-                }
-            }
-        }
-
-        function renderProfile() {
-            const bannerImg = document.getElementById('profile-banner-img');
-            if (bannerImg) {
-                bannerImg.src = globalProfileData.bannerUrl || defaultProfileData.bannerUrl;
-            }
-
-            const socials = globalProfileData.socials || defaultProfileData.socials || {};
-            const soopLink = document.getElementById('profile-soop-link');
-            if (soopLink) soopLink.href = socials.soop || 'https://www.sooplive.com/station/whiteone325';
-            
-            const youtubeLink = document.getElementById('profile-youtube-link');
-            if (youtubeLink) youtubeLink.href = socials.youtube || 'https://www.youtube.com/@난워니';
-
-            const cafeLink = document.getElementById('profile-cafe-link');
-            if (cafeLink) cafeLink.href = socials.cafe || 'https://cafe.naver.com/nanwony';
-
-            const fancimLink = document.getElementById('profile-fancim-link');
-            if (fancimLink) fancimLink.href = socials.fancim || 'https://fancim.me/celeb/profile.aspx?cu_id=nanwony';
-
-            const introEl = document.getElementById('profile-intro-text');
-            if (introEl) introEl.textContent = globalProfileData.introText || defaultProfileData.introText;
-            
-            const tagsContainer = document.getElementById('profile-tags-container');
-            if (tagsContainer) {
-                tagsContainer.innerHTML = (globalProfileData.tags || defaultProfileData.tags).map(tag => `<span class="px-3 py-1 bg-amber-100 dark:bg-brand-dark text-brand-dark dark:text-amber-300 rounded-lg text-xs font-black border border-amber-400/30">#${tag.trim()}</span>`).join('');
-            }
-            
-            const ddayContainer = document.getElementById('dday-container');
-            if (ddayContainer) {
-                ddayContainer.innerHTML = '';
-                const ddays = globalProfileData.ddays || defaultProfileData.ddays || [];
-                ddays.forEach(dday => {
-                    const ddayResult = calculateDDayString(dday.type, dday.date);
-                    ddayContainer.innerHTML += `
-                        <div class="flex items-center justify-between p-3 bg-amber-50 dark:bg-[#18181c] rounded-xl border border-amber-400/20">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-black text-brand-dark dark:text-gray-200">${dday.title}</span>
-                                <span class="text-[10px] text-gray-400 font-bold mt-0.5">${dday.date}</span>
-                            </div>
-                            <div class="text-right">${ddayResult}</div>
-                        </div>
-                    `;
-                });
-            }
-
-            const broadcast = globalProfileData.broadcast || defaultProfileData.broadcast;
-            const timeEl = document.getElementById('profile-broadcast-time');
-            if (timeEl) timeEl.innerText = broadcast.time || '';
-            const contentEl = document.getElementById('profile-broadcast-content');
-            if (contentEl) contentEl.innerText = broadcast.content || '';
-            const gameEl = document.getElementById('profile-broadcast-game');
-            if (gameEl) gameEl.innerText = broadcast.game || '';
-            
-            const likesContainer = document.getElementById('profile-likes-container');
-            if (likesContainer) {
-                likesContainer.innerHTML = (globalProfileData.likes || defaultProfileData.likes).map(like => `<span class="px-3 py-1 bg-amber-100 dark:bg-brand-cardBg text-amber-600 dark:text-amber-300 border border-amber-400/30 rounded-lg text-xs font-black">${like.trim()}</span>`).join('');
-            }
-            const dislikesContainer = document.getElementById('profile-dislikes-container');
-            if (dislikesContainer) {
-                dislikesContainer.innerHTML = (globalProfileData.dislikes || defaultProfileData.dislikes).map(dislike => `<span class="px-3 py-1 bg-gray-100 dark:bg-black text-gray-600 dark:text-gray-300 rounded-lg text-xs font-black border border-black/10 dark:border-amber-400/20">${dislike.trim()}</span>`).join('');
-            }
-        }
-
-        function renderNotice() {
-            const list = document.getElementById('notice-list');
-            if (!list) return;
-            list.innerHTML = '';
-            if (globalNoticeData.length === 0) { list.innerHTML = '<li class="text-center text-gray-400 py-6 font-bold">등록된 소식이 없습니다.</li>'; return; }
-
-            globalNoticeData.forEach(notice => {
-                let badgeClass = 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-amber-200';
-                let bgClass = 'p-3.5 rounded-2xl hover:bg-amber-100/30 dark:hover:bg-amber-950/10 border-2 border-transparent hover:border-black transition-all';
-                
-                if (notice.typeColor === 'red') { 
-                    badgeClass = 'bg-amber-400 text-black font-black'; 
-                    bgClass = 'bg-amber-100/50 dark:bg-brand-dark p-3.5 rounded-2xl border-2 border-black dark:border-amber-400/40'; 
-                } else if (notice.typeColor === 'blue') { 
-                    badgeClass = 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300'; 
-                }
-
-                let linkHtml = '';
-                if (notice.link && notice.link.trim() !== '') {
-                    linkHtml = `
-                        <div class="mt-2.5">
-                            <a href="${notice.link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-black text-black bg-amber-400 border-2 border-black px-3 py-1 rounded-lg hover:bg-amber-500 transition-all">
-                                링크 이동 <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                            </a>
-                        </div>
-                    `;
-                }
-
-                list.innerHTML += `
-                    <li class="${bgClass} font-bold">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="${badgeClass} text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-wider">${notice.type}</span>
-                            <span class="text-[11px] text-gray-400 font-bold">${notice.date}</span>
-                        </div>
-                        <p class="text-sm text-gray-800 dark:text-amber-100 ${notice.typeColor === 'red' ? 'font-black text-amber-600 dark:text-amber-300' : ''}">${linkify(notice.content)}</p>
-                        ${linkHtml}
-                    </li>
-                `;
-            });
-        }
-
-        function renderSchedule() {
-            const list = document.getElementById('schedule-list');
-            if (!list) return;
-            list.innerHTML = '';
-
-            globalScheduleData.forEach(schedule => {
-                const isRest = schedule.isRest;
-                const dayBadgeClass = isRest
-                    ? 'text-black bg-amber-400 border-2 border-black font-black'
-                    : 'text-gray-500 dark:text-amber-200 bg-gray-100 dark:bg-zinc-800/80 border border-black/10 dark:border-amber-400/20';
-
-                const textClass = isRest
-                    ? 'text-amber-600 dark:text-amber-400 font-black animate-pulse'
-                    : 'text-gray-750 dark:text-amber-100 font-semibold';
-
-                const bgClass = isRest
-                    ? 'bg-amber-400/10 dark:bg-brand-cardBg border-2 border-amber-400/30'
-                    : 'hover:bg-amber-100/30 dark:hover:bg-[#18181c] transition-colors border border-transparent';
-
-                list.innerHTML += `
-                    <div class="flex items-center justify-between p-2.5 rounded-xl ${bgClass} transition-all">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 flex items-center justify-center text-xs rounded-lg ${dayBadgeClass}">${schedule.day}</div>
-                            <div class="text-sm ${textClass}">${schedule.content}</div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function renderPledgeText() {
-            const container = document.getElementById('pledge-content-text');
-            if (container) {
-                container.textContent = globalPledgeText || defaultPledgeText;
-            }
-        }
-
-        function getAvatarHTML(user, isLarge = true) {
-            const sizeClass = isLarge ? 'w-14 h-14 text-2xl mb-2.5' : 'w-10 h-10 text-xl';
-            const marginClass = isLarge ? 'mb-2.5' : '';
-            const borderClass = 'border-2 border-black';
-            
-            if (user.id && user.id.trim() !== '') {
-                const prefix = user.id.substring(0, 2);
-                const avatarUrl = `https://stimg.afreecatv.com/LOGO/${prefix}/${user.id}/${user.id}.jpg`;
-                
-                return `
-                    <div class="relative ${sizeClass} ${marginClass} flex-shrink-0">
-                        <img src="${avatarUrl}" 
-                             onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');" 
-                             alt="${user.nickname}" 
-                             class="w-full h-full rounded-full object-cover ${borderClass} bg-white">
-                        <div class="hidden w-full h-full rounded-full bg-amber-100 dark:bg-amber-950/50 ${borderClass} flex items-center justify-center select-none">🐾</div>
-                    </div>
-                `;
-            } else {
-                return `
-                    <div class="${sizeClass} ${marginClass} rounded-full bg-amber-100 dark:bg-amber-950/50 ${borderClass} flex items-center justify-center flex-shrink-0 select-none">
-                        🐾
-                    </div>
-                `;
-            }
-        }
-
-        function renderUpbo(data) {
-            const grid = document.getElementById('upbo-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            if (data.length === 0) { grid.innerHTML = '<div class="col-span-full py-10 text-center text-gray-400 font-bold">검색된 워냥이가 없어요 !</div>'; return; }
-
-            data.forEach(user => {
-                const totalItems = (user.items || []).reduce((sum, item) => sum + item.count, 0);
-                const avatarHtml = getAvatarHTML(user, true);
-                const card = document.createElement('div');
-                card.className = 'bg-white dark:bg-[#18181c] border-2 border-black dark:border-amber-400/40 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-amber-100/30 transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] duration-200 relative group';
-                card.onclick = () => { if (isAdminMode) openUpboEditModal(user); else openUpboModal(user); };
-                const adminBadge = isAdminMode ? `<div class="absolute top-2 right-2 text-amber-500"><i class="fa-solid fa-pen-to-square text-xs"></i></div>` : '';
-
-                card.innerHTML = `
-                    ${adminBadge}
-                    ${avatarHtml}
-                    <div class="text-brand-dark dark:text-amber-100 font-black text-sm mb-2 truncate w-full text-center">${user.nickname}</div>
-                    <div class="bg-amber-400 text-black text-[10px] font-black px-2 py-0.5 rounded-lg border border-black">숙제 ${totalItems}개</div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function renderSongList() {
-            const body = document.getElementById('song-list-body');
-            if (!body) return;
-            body.innerHTML = '';
-
-            const keyword = document.getElementById('song-search-input').value.toLowerCase();
-            
-            let filteredSongs = globalSongsData;
-            if (currentSelectedGenre !== '전체') {
-                filteredSongs = filteredSongs.filter(s => s.genre === currentSelectedGenre);
-            }
-            if (keyword) {
-                filteredSongs = filteredSongs.filter(s => s.title.toLowerCase().includes(keyword) || s.artist.toLowerCase().includes(keyword));
-            }
-
-            if (filteredSongs.length === 0) {
-                body.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-gray-400 font-bold text-xs">노래책이 비어있습니다.</td></tr>`;
-                return;
-            }
-
-            filteredSongs.forEach((song, originalIndex) => {
-                const actualIndex = globalSongsData.findIndex(s => s.title === song.title && s.artist === song.artist);
-                
-                const deleteBtn = isAdminMode ? `
-                    <button onclick="deleteSong(${actualIndex})" class="text-gray-400 hover:text-red-500 transition-colors p-1" title="삭제">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
-                ` : '';
-
-                const currentRating = song.rating || 5;
-                let starsHtml = '<div class="flex justify-center items-center gap-0.5 text-amber-500">';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= currentRating) {
-                        starsHtml += `<i class="fa-solid fa-star text-[11px]"></i>`;
-                    } else {
-                        starsHtml += `<i class="fa-regular fa-star text-gray-300 dark:text-zinc-600 text-[11px]"></i>`;
-                    }
-                }
-                starsHtml += '</div>';
-
-                body.innerHTML += `
-                    <tr class="hover:bg-amber-100/20 dark:hover:bg-[#18181c]/50 transition-colors font-semibold">
-                        <td class="px-4 py-3"><span class="bg-amber-100 dark:bg-brand-dark text-amber-700 dark:text-amber-300 text-[10px] px-2 py-0.5 rounded font-black border border-amber-400/30">${song.genre}</span></td>
-                        <td class="px-4 py-3 text-sm text-brand-dark dark:text-amber-100 font-bold">${song.title}</td>
-                        <td class="px-4 py-3 text-xs text-gray-500 dark:text-amber-200/70">${song.artist}</td>
-                        <td class="px-4 py-3 text-center">${starsHtml}</td>
-                        <td class="px-4 py-3 text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                <button onclick="requestSong('${song.title}', '${song.artist}')" class="px-3 py-1 bg-amber-400 text-black border border-black hover:bg-amber-500 rounded-lg text-xs font-black transition-all shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)]" title="신청 서식 복사">
-                                    <i class="fa-solid fa-copy mr-1"></i>신청
-                                </button>
-                                ${deleteBtn}
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function renderAwards() {
-            const container = document.getElementById('awards-list');
-            if (!container) return;
-            container.innerHTML = '';
-            if (!globalAwardsData || globalAwardsData.length === 0) {
-                container.innerHTML = `<div class="text-center text-gray-400 py-6 font-bold text-xs">수상 내역 및 아카이브 기록이 비어있습니다.</div>`;
-                return;
-            }
-            globalAwardsData.forEach((award, index) => {
-                const deleteBtn = isAdminMode ? `
-                    <button onclick="deleteAward(${index})" class="text-gray-400 hover:text-red-500 transition-colors p-1" title="기록 삭제">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
-                ` : '';
-
-                container.innerHTML += `
-                    <div class="flex items-center justify-between p-3.5 bg-amber-50 dark:bg-[#18181c] rounded-2xl border-2 border-black dark:border-amber-400/30">
-                        <div class="flex items-center gap-3">
-                            <span class="bg-amber-400 text-black text-xs font-black px-2.5 py-1 rounded-lg border border-black">${award.year}</span>
-                            <div>
-                                <h4 class="text-sm font-black text-brand-dark dark:text-amber-100">${award.title}</h4>
-                                <p class="text-xs font-bold text-gray-500 dark:text-amber-200/70 mt-0.5">${award.desc}</p>
-                            </div>
-                        </div>
-                        ${deleteBtn}
-                    </div>
-                `;
-            });
-        }
-
-        const catFortunes = [
-            { title: "대냥길 🐾✨", desc: "오늘은 별풍선 폭탄과 워냥이들의 사랑이 샘솟는 날! 소통 텐션 최고조!", emoji: "🌟" },
-            { title: "냥냥 명곡길 🐱💛", desc: "원하는 곡이 깔끔하게 부르고 감동이 전해지는 명곡 라이브 데이!", emoji: "🎤" },
-            { title: "힐링 냥길 ☕🐾", desc: "워냥이들과 도란도란 따뜻한 이야기 나누며 마음에 휴식을 얻는 날!", emoji: "💛" },
-            { title: "행운 냥길 🎉✨", desc: "뜻밖의 주스너와 새로운 워냥이가 귀여운 난워니의 매력에 푹 빠질 날!", emoji: "🍀" }
-        ];
-
-        function drawCatFortune() {
-            const fortune = catFortunes[Math.floor(Math.random() * catFortunes.length)];
-            const cardInner = document.getElementById('fortune-card-inner');
-            if (cardInner) {
-                cardInner.innerHTML = `
-                    <span class="text-6xl mb-3 block animate-bounce">${fortune.emoji}</span>
-                    <span class="text-xs font-black bg-black text-amber-300 px-3 py-1 rounded-full mb-2 inline-block">${fortune.title}</span>
-                    <p class="text-xs font-bold text-black mt-2 leading-relaxed">${fortune.desc}</p>
-                `;
-            }
-            showToast(`오늘의 냥냥 운세: ${fortune.title}`);
-        }
-
-        function openAdminLoginModal() {
-            if (isAdminMode) {
-                isAdminMode = false;
-                toggleAdminButtons(false);
-                showToast("로그아웃 되었습니다.");
-                return;
-            }
-            const modal = document.getElementById('admin-login-modal');
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modal.querySelector('div').classList.remove('scale-95');
-                modal.querySelector('div').classList.add('scale-100');
-            });
-            document.getElementById('admin-pin').value = '';
-            document.getElementById('admin-pin').focus();
-        }
-
-        function closeAdminLoginModal() {
-            const modal = document.getElementById('admin-login-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-        }
-
-        function checkAdminPin() {
-            const pin = document.getElementById('admin-pin').value;
-            if (pin === '990325@') { 
-                isAdminMode = true;
-                closeAdminLoginModal();
-                toggleAdminButtons(true);
-                showToast("난워니 관리자 모드 인증 완료 🐾💛");
-            } else {
-                const input = document.getElementById('admin-pin');
-                input.classList.add('border-red-500');
-                input.value = '';
-                input.placeholder = '비밀번호 불일치!';
-                setTimeout(() => {
-                    input.classList.remove('border-red-500');
-                    input.placeholder = '••••••••';
-                }, 1800);
-            }
-        }
-
-        function toggleAdminButtons(show) {
-            const method = show ? 'remove' : 'add';
-            document.getElementById('admin-add-user-btn')?.classList[method]('hidden');
-            document.getElementById('admin-notice-edit-btn')?.classList[method]('hidden');
-            document.getElementById('admin-schedule-edit-btn')?.classList[method]('hidden');
-            document.getElementById('admin-profile-edit-btn')?.classList[method]('hidden');
-            document.getElementById('admin-add-song-btn')?.classList[method]('hidden');
-            document.getElementById('admin-edit-pledge-text-btn')?.classList[method]('hidden');
-            document.getElementById('admin-add-award-btn')?.classList[method]('hidden');
-            document.getElementById('admin-banner-upload-container')?.classList[method]('hidden');
-            document.getElementById('admin-section-toggle-btn')?.classList[method]('hidden');
-            document.getElementById('mobile-admin-section-toggle-btn')?.classList[method]('hidden');
-            document.getElementById('mobile-menu-admin-toggle-btn')?.classList[method]('hidden');
-
-            const topBtnText = document.getElementById('top-admin-btn-text');
-            const topBtn = document.getElementById('top-admin-login-btn');
-            const mobileTopBtn = document.getElementById('mobile-top-admin-btn');
-
-            if (topBtnText && topBtn) {
-                if (show) {
-                    topBtnText.innerText = "관리자 (ON)";
-                    topBtn.classList.add('bg-amber-400', 'text-black', 'border-black');
-                    topBtn.classList.remove('bg-amber-100', 'dark:bg-brand-cardBg', 'text-brand-dark', 'dark:text-amber-300');
-                } else {
-                    topBtnText.innerText = "관리자";
-                    topBtn.classList.remove('bg-amber-400', 'text-black', 'border-black');
-                    topBtn.classList.add('bg-amber-100', 'dark:bg-brand-cardBg', 'text-brand-dark', 'dark:text-amber-300');
-                }
-            }
-
-            if (mobileTopBtn) {
-                if (show) {
-                    mobileTopBtn.classList.add('bg-amber-400', 'text-black', 'rounded-xl');
-                } else {
-                    mobileTopBtn.classList.remove('bg-amber-400', 'text-black');
-                }
-            }
-
-            renderSongList();
-            renderAwards();
-        }
-
-        function compressImage(file, maxWidth, maxHeight, quality) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > height) {
-                            if (width > maxWidth) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
-                            }
-                        } else {
-                            if (height > maxHeight) {
-                                width = Math.round((width * maxHeight) / height);
-                                height = maxHeight;
-                            }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-                        resolve(canvas.toDataURL(mimeType, quality));
-                    };
-                    img.onerror = (err) => reject(err);
-                };
-                reader.onerror = (err) => reject(err);
-            });
-        }
-
-        async function handleDirectBannerUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            showToast("배너 이미지 가공 및 등록 중... 📸");
             try {
-                const compressedBase64 = await compressImage(file, 1200, 400, 0.85);
-                globalProfileData.bannerUrl = compressedBase64;
-                const bannerImg = document.getElementById('profile-banner-img');
-                if (bannerImg) bannerImg.src = compressedBase64;
-                await updateFirestore('profile', globalProfileData);
-                showToast("배너 사진 직접 업로드 성공! 🎨");
+                await setDoc(getPublicDoc('settings', 'visibility'), vis);
+                window.stateData.visibility = vis;
+                applyVisibility();
+                closeSectionToggleModal();
+                showToast("화면 섹션 설정이 저장되었습니다!");
             } catch (err) {
-                console.error("배너 업로드 에러:", err);
-                showToast("배너 업로드 실패 😥");
+                console.error(err);
+                showToast("저장 권한이 없습니다.");
             }
-        }
+        };
 
-        function openProfileEditModal() {
-            const modal = document.getElementById('profile-edit-modal');
-            document.getElementById('edit-profile-intro').value = globalProfileData.introText || '';
-            document.getElementById('edit-profile-tags').value = (globalProfileData.tags || []).join(', ');
-
-            const broadcast = globalProfileData.broadcast || {};
-            document.getElementById('edit-profile-time').value = broadcast.time || '';
-            document.getElementById('edit-profile-content').value = broadcast.content || '';
-            document.getElementById('edit-profile-game').value = broadcast.game || '';
-
-            document.getElementById('edit-profile-likes').value = (globalProfileData.likes || []).join(', ');
-            document.getElementById('edit-profile-dislikes').value = (globalProfileData.dislikes || []).join(', ');
-
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modal.querySelector('div').classList.remove('scale-95');
-                modal.querySelector('div').classList.add('scale-100');
-            });
-        }
-
-        function closeProfileEditModal() {
-            const modal = document.getElementById('profile-edit-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-        }
-
-        function saveProfileChanges() {
-            const parse = (str) => str.split(',').map(item => item.trim()).filter(item => item !== '');
-            
-            globalProfileData.introText = document.getElementById('edit-profile-intro').value;
-            globalProfileData.tags = parse(document.getElementById('edit-profile-tags').value);
-
-            if (!globalProfileData.broadcast) globalProfileData.broadcast = {};
-            globalProfileData.broadcast.time = document.getElementById('edit-profile-time').value;
-            globalProfileData.broadcast.content = document.getElementById('edit-profile-content').value;
-            globalProfileData.broadcast.game = document.getElementById('edit-profile-game').value;
-
-            globalProfileData.likes = parse(document.getElementById('edit-profile-likes').value);
-            globalProfileData.dislikes = parse(document.getElementById('edit-profile-dislikes').value);
-
-            updateFirestore('profile', globalProfileData);
-            renderProfile();
-            closeProfileEditModal();
-            showToast("대표 프로필이 수정되었습니다! 🐾");
-        }
-
-        function openNoticeEditModal() {
-            const modal = document.getElementById('notice-edit-modal');
-            renderNoticeEditList();
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modal.querySelector('div').classList.remove('scale-95');
-                modal.querySelector('div').classList.add('scale-100');
-            });
-        }
-
-        function closeNoticeEditModal() {
-            const modal = document.getElementById('notice-edit-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-        }
-
+        // Notice Edit Admin Logic
         function renderNoticeEditList() {
-            const list = document.getElementById('notice-edit-list');
-            if (!list) return;
-            list.innerHTML = '';
-            if (globalNoticeData.length === 0) { list.innerHTML = '<div class="text-center text-gray-400 py-4 font-bold text-xs">공지 목록이 비어있습니다.</div>'; return; }
-            globalNoticeData.forEach((notice, index) => {
-                list.innerHTML += `
-                    <div class="bg-amber-50 dark:bg-[#18181c] border border-black/10 dark:border-amber-400/40 p-3 rounded-xl flex justify-between items-start gap-3 font-bold text-xs">
-                        <div class="flex-grow min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[9px] bg-amber-400 text-black px-1.5 py-0.5 rounded font-black">${notice.type}</span>
-                                <span class="text-[10px] text-gray-400">${notice.date}</span>
-                            </div>
-                            <p class="text-xs text-gray-700 dark:text-amber-100 break-all">${notice.content}</p>
-                        </div>
-                        <button onclick="deleteNotice(${index})" class="text-gray-400 hover:text-red-500 p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                    </div>
-                `;
-            });
-        }
+            const container = document.getElementById('notice-edit-list-container');
+            if (!container) return;
+            const notices = window.stateData.notices || [];
 
-        function addNewNotice() {
-            const type = document.getElementById('new-notice-type').value;
-            const contentInput = document.getElementById('new-notice-content');
-            const linkInput = document.getElementById('new-notice-link');
-            const content = contentInput.value.trim();
-            let link = linkInput.value.trim();
-
-            if (!content) return;
-            if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
-
-            let typeColor = 'gray';
-            if (type === '필독') typeColor = 'red';
-            if (type === '공지') typeColor = 'blue';
-
-            const today = new Date();
-            const dateStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
-
-            globalNoticeData.unshift({ type, date: dateStr, content, link, typeColor });
-            updateFirestore('notice', globalNoticeData);
-            contentInput.value = '';
-            linkInput.value = '';
-            renderNoticeEditList();
-            renderNotice();
-        }
-
-        function deleteNotice(index) {
-            globalNoticeData.splice(index, 1);
-            updateFirestore('notice', globalNoticeData);
-            renderNoticeEditList();
-            renderNotice();
-        }
-
-        function openScheduleEditModal() {
-            const modal = document.getElementById('schedule-edit-modal');
-            renderScheduleEditList();
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modal.querySelector('div').classList.remove('scale-95');
-                modal.querySelector('div').classList.add('scale-100');
-            });
-        }
-
-        function closeScheduleEditModal() {
-            const modal = document.getElementById('schedule-edit-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-        }
-
-        function renderScheduleEditList() {
-            const list = document.getElementById('schedule-edit-list');
-            if (!list) return;
-            list.innerHTML = '';
-            globalScheduleData.forEach((schedule, index) => {
-                list.innerHTML += `
-                    <div class="flex items-center gap-3 bg-amber-50 dark:bg-[#18181c] border border-black/10 dark:border-amber-400/40 p-2 rounded-xl font-bold">
-                        <div class="w-6 text-center text-xs text-amber-500 font-black">${schedule.day}</div>
-                        <input type="text" id="schedule-input-${index}" value="${schedule.content}" class="flex-grow bg-white dark:bg-black/40 border-2 border-black dark:border-amber-400 text-gray-950 dark:text-amber-100 text-xs rounded-lg p-1.5 outline-none">
-                        <label class="flex items-center gap-1 text-[10px] text-gray-400 cursor-pointer flex-shrink-0">
-                            <input type="checkbox" id="schedule-rest-${index}" ${schedule.isRest ? 'checked' : ''} class="w-4 h-4 text-amber-400 rounded focus:ring-amber-400">휴방
-                        </label>
-                    </div>
-                `;
-            });
-        }
-
-        function saveScheduleChanges() {
-            globalScheduleData.forEach((schedule, index) => {
-                const content = document.getElementById(`schedule-input-${index}`).value;
-                const isRest = document.getElementById(`schedule-rest-${index}`).checked;
-                schedule.content = content;
-                schedule.isRest = isRest;
-            });
-            updateFirestore('schedule', globalScheduleData);
-            renderSchedule();
-            closeScheduleEditModal();
-            showToast("주간 일정이 저장되었습니다! 📅");
-        }
-
-        function openEditPledgeTextModal() {
-            const modal = document.getElementById('edit-pledge-text-modal');
-            document.getElementById('edit-pledge-textarea').value = globalPledgeText || '';
-            requestAnimationFrame(() => { 
-                modal.classList.remove('opacity-0', 'pointer-events-none'); 
-                modal.querySelector('div').classList.remove('scale-95'); 
-                modal.querySelector('div').classList.add('scale-100'); 
-            });
-        }
-
-        function closeEditPledgeTextModal() {
-            const modal = document.getElementById('edit-pledge-text-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none'); 
-            modal.querySelector('div').classList.remove('scale-100'); 
-            modal.querySelector('div').classList.add('scale-95');
-        }
-
-        function savePledgeTextChanges() {
-            const val = document.getElementById('edit-pledge-textarea').value;
-            globalPledgeText = val;
-            updateFirestore('pledgeText', globalPledgeText);
-            renderPledgeText();
-            closeEditPledgeTextModal();
-            showToast("API 공약 내용이 수정되었습니다! 📜");
-        }
-
-        function openUpboModal(user) {
-            let modal = document.getElementById('upbo-modal');
-            if (!modal) {
-                modal = document.createElement('div');
-                modal.id = 'upbo-modal';
-                modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300';
-                document.body.appendChild(modal);
-            }
-            const itemsHtml = (user.items || []).length > 0 ? user.items.map(item => `
-                <div class="flex justify-between items-center bg-amber-50 dark:bg-black/30 border border-black/10 dark:border-amber-400/30 rounded-xl p-3 mb-2 font-bold text-xs">
-                    <span class="text-brand-dark dark:text-amber-100">${item.name}</span>
-                    <span class="text-amber-600 font-black bg-amber-100 border border-amber-400 px-2 py-0.5 rounded-lg text-[10px]">×${item.count}</span>
-                </div>
-            `).join('') : `<div class="text-center text-gray-400 py-6 font-bold text-xs">남아있는 방셀 숙제가 없습니다! ✨</div>`;
-
-            const avatarHtml = getAvatarHTML(user, false);
-
-            modal.innerHTML = `
-                <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-sm overflow-hidden transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400">
-                    <div class="p-4 flex items-center justify-between border-b-2 border-black dark:border-amber-400 bg-amber-100 dark:bg-black">
-                        <div class="flex items-center gap-2.5">
-                            ${avatarHtml}
-                            <div>
-                                <div class="text-brand-dark dark:text-white font-black text-sm">${user.nickname}</div>
-                                <div class="text-gray-400 text-[9px] font-bold">(${user.id || '아이디 없음'})</div>
-                            </div>
-                        </div>
-                        <button onclick="closeUpboModal()" class="text-amber-500 hover:text-black p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
-                    </div>
-                    <div class="p-4 max-h-64 overflow-y-auto">${itemsHtml}</div>
-                </div>
-            `;
-            requestAnimationFrame(() => { modal.classList.remove('opacity-0', 'pointer-events-none'); modal.querySelector('div').classList.remove('scale-95'); modal.querySelector('div').classList.add('scale-100'); });
-            modal.onclick = (e) => { if (e.target === modal) closeUpboModal(); };
-        }
-
-        function closeUpboModal() {
-            const modal = document.getElementById('upbo-modal');
-            if (modal) { modal.classList.add('opacity-0', 'pointer-events-none'); modal.querySelector('div').classList.remove('scale-100'); modal.querySelector('div').classList.add('scale-95'); }
-        }
-
-        function openUpboEditModal(user) {
-            currentEditingUserId = user.id;
-            const modal = document.getElementById('upbo-edit-modal');
-            const avatarHtml = getAvatarHTML(user, false);
-            
-            document.getElementById('edit-modal-header').innerHTML = `
-                ${avatarHtml}
-                <div>
-                    <div class="text-brand-dark dark:text-white font-black text-sm">${user.nickname} <span class="text-[9px] bg-amber-400 text-black px-1.5 py-0.5 rounded ml-1 font-bold">EDIT</span></div>
-                    <div class="text-gray-400 text-[9px] font-bold">(${user.id})</div>
-                </div>
-            `;
-            
-            const deleteUserBtn = document.getElementById('delete-user-confirm-btn');
-            if (deleteUserBtn) {
-                deleteUserBtn.classList.remove('hidden');
-                deleteUserBtn.classList.add('block');
-                deleteConfirmState = false; 
-                deleteUserBtn.innerHTML = `<i class="fa-solid fa-user-minus mr-1"></i>삭제`;
-                deleteUserBtn.onclick = () => handleDeleteUser(user.id);
-            }
-
-            renderEditItems();
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modal.querySelector('div').classList.remove('scale-95');
-                modal.querySelector('div').classList.add('scale-100');
-            });
-        }
-
-        function closeUpboEditModal() {
-            const modal = document.getElementById('upbo-edit-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-            currentEditingUserId = null;
-        }
-
-        function renderEditItems() {
-            const user = globalUpboData.find(u => u.id === currentEditingUserId); if (!user) return;
-            const body = document.getElementById('edit-modal-body');
-            if (user.items.length === 0) { body.innerHTML = `<div class="text-center text-gray-400 py-6 font-bold text-xs">등록된 숙제가 없습니다.</div>`; return; }
-            body.innerHTML = user.items.map((item, index) => `
-                <div class="flex justify-between items-center bg-amber-50 dark:bg-black/30 border border-black/10 dark:border-amber-400/20 rounded-xl p-3 mb-2 font-bold">
-                    <span class="text-brand-dark dark:text-amber-100 text-xs">${item.name}</span>
-                    <div class="flex items-center gap-2">
-                        <button onclick="changeItemCount(${index}, -1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-200 dark:bg-brand-dark text-gray-700 hover:bg-red-100 transition-colors"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                        <span class="w-5 text-center text-xs text-brand-dark dark:text-white">${item.count}</span>
-                        <button onclick="changeItemCount(${index}, 1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-200 dark:bg-brand-dark text-gray-700 hover:bg-amber-100 transition-colors"><i class="fa-solid fa-plus text-[10px]"></i></button>
-                        <button onclick="deleteItem(${index})" class="ml-2 text-gray-400 hover:text-red-500 transition-colors p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                    </div>
+            container.innerHTML = notices.map((n, idx) => `
+                <div class="flex items-center justify-between p-2 bg-amber-50 dark:bg-black/30 rounded-xl border border-amber-400/20 text-xs">
+                    <span class="font-bold truncate max-w-[200px] text-brand-dark dark:text-amber-100">${n.title}</span>
+                    <button onclick="removeNoticeItem('${idx}')" class="text-red-500 hover:text-red-700 font-black px-2 py-1">삭제</button>
                 </div>
             `).join('');
         }
 
-        function changeItemCount(index, delta) {
-            const user = globalUpboData.find(u => u.id === currentEditingUserId); if (!user) return;
-            user.items[index].count += delta; if (user.items[index].count <= 0) user.items[index].count = 0;
-            updateFirestore('upbo', globalUpboData); renderEditItems(); renderUpbo(globalUpboData);
-        }
+        window.addNewNoticeItem = async function() {
+            if (!checkAdminAuthGuard()) return;
+            const title = document.getElementById('notice-input-title').value.trim();
+            const content = document.getElementById('notice-input-content').value.trim();
 
-        function deleteItem(index) {
-            const user = globalUpboData.find(u => u.id === currentEditingUserId); if (!user) return;
-            user.items.splice(index, 1); updateFirestore('upbo', globalUpboData); renderEditItems(); renderUpbo(globalUpboData);
-        }
+            if (!title) {
+                showToast("제목을 입력해주세요.");
+                return;
+            }
 
-        function addNewItem() {
-            const input = document.getElementById('new-item-name'); const name = input.value.trim(); if (!name) return;
-            let user = globalUpboData.find(u => u.id === currentEditingUserId); if (!user) return;
-            const existing = user.items.find(i => i.name === name);
-            if (existing) existing.count += 1; else user.items.push({ name: name, count: 1 });
-            input.value = ''; updateFirestore('upbo', globalUpboData); renderEditItems(); renderUpbo(globalUpboData);
-        }
-
-        function handleDeleteUser(userId) {
-            globalUpboData = globalUpboData.filter(u => u.id !== userId);
-            updateFirestore('upbo', globalUpboData);
-            closeUpboEditModal();
-            renderUpbo(globalUpboData);
-            showToast("워냥이가 목록에서 삭제되었습니다.");
-        }
-
-        function openAddUserModal() {
-            const modal = document.getElementById('add-user-modal');
-            document.getElementById('new-user-id').value = '';
-            document.getElementById('new-user-nickname').value = '';
-            requestAnimationFrame(() => { modal.classList.remove('opacity-0', 'pointer-events-none'); modal.querySelector('div').classList.remove('scale-95'); modal.querySelector('div').classList.add('scale-100'); });
-        }
-
-        function closeAddUserModal() {
-            const modal = document.getElementById('add-user-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-        }
-
-        function submitNewUser() {
-            const idInput = document.getElementById('new-user-id').value.trim();
-            const nickInput = document.getElementById('new-user-nickname').value.trim();
-            if (!nickInput) return;
-            const finalId = idInput || 'fan_cat_' + Math.random().toString(36).substring(2, 8);
-            globalUpboData.unshift({ id: finalId, nickname: nickInput, items: [] });
-            updateFirestore('upbo', globalUpboData);
-            closeAddUserModal();
-            renderUpbo(globalUpboData);
-            showToast(`새 워냥이 "${nickInput}" 님이 등록되었습니다! 🐾`);
-        }
-
-        function filterSongsByGenre(genre) {
-            currentSelectedGenre = genre;
-            const tabs = document.querySelectorAll('#song-genre-tabs button');
-            tabs.forEach(tab => {
-                tab.classList.remove('bg-amber-400', 'text-black', 'shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]', 'border-black');
-                tab.classList.add('bg-amber-100', 'dark:bg-[#1f1d18]', 'text-[#26241e]', 'dark:text-amber-300', 'border-transparent');
+            const notices = window.stateData.notices || [];
+            notices.unshift({
+                id: Date.now().toString(),
+                title,
+                content,
+                date: new Date().toLocaleDateString()
             });
-            event.target.classList.remove('bg-amber-100', 'dark:bg-[#1f1d18]', 'text-[#26241e]', 'dark:text-amber-300', 'border-transparent');
-            event.target.classList.add('bg-amber-400', 'text-black', 'border-black', 'shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]');
-            
-            renderSongList();
+
+            try {
+                await setDoc(getPublicDoc('settings', 'notices'), { items: notices });
+                document.getElementById('notice-input-title').value = '';
+                document.getElementById('notice-input-content').value = '';
+                renderNoticeEditList();
+                showToast("새 공지가 등록되었습니다.");
+            } catch (err) {
+                showToast("저장 실패: 관리자 권한을 확인해주세요.");
+            }
+        };
+
+        window.removeNoticeItem = async function(idx) {
+            if (!checkAdminAuthGuard()) return;
+            const notices = window.stateData.notices || [];
+            notices.splice(idx, 1);
+
+            try {
+                await setDoc(getPublicDoc('settings', 'notices'), { items: notices });
+                renderNoticeEditList();
+                showToast("공지가 삭제되었습니다.");
+            } catch (err) {
+                showToast("삭제 실패");
+            }
+        };
+
+        // Schedule Edit Admin Logic
+        function renderScheduleEditFields() {
+            const container = document.getElementById('schedule-edit-fields');
+            if (!container) return;
+            const schs = window.stateData.schedules || [];
+
+            container.innerHTML = schs.map((s, idx) => `
+                <div class="flex items-center gap-2">
+                    <span class="w-16 text-amber-500 font-black">${s.day}</span>
+                    <input type="text" id="schedule-input-${idx}" value="${s.text}" class="flex-grow bg-[#fffef0] dark:bg-black/30 border-2 border-black dark:border-amber-400 p-2 rounded-xl text-gray-950 dark:text-amber-100 outline-none">
+                </div>
+            `).join('');
         }
 
-        function handleSongSearch() {
-            renderSongList();
+        window.saveScheduleData = async function() {
+            if (!checkAdminAuthGuard()) return;
+            const schs = window.stateData.schedules || [];
+            schs.forEach((s, idx) => {
+                const input = document.getElementById(`schedule-input-${idx}`);
+                if (input) s.text = input.value;
+            });
+
+            try {
+                await setDoc(getPublicDoc('settings', 'schedules'), { items: schs });
+                closeScheduleEditModal();
+                showToast("주간 일정이 저장되었습니다.");
+            } catch (err) {
+                showToast("저장 실패: 관리자 권한 필요");
+            }
+        };
+
+        // Profile Save
+        window.saveProfileData = async function() {
+            if (!checkAdminAuthGuard()) return;
+            const newProfile = {
+                banner: document.getElementById('edit-profile-banner').value,
+                avatar: document.getElementById('edit-profile-avatar').value,
+                intro: document.getElementById('edit-profile-intro').value,
+                broadcastTime: document.getElementById('edit-broadcast-time').value,
+                broadcastContent: document.getElementById('edit-broadcast-content').value,
+                broadcastGame: document.getElementById('edit-broadcast-game').value,
+                likes: document.getElementById('edit-profile-likes').value.split(',').map(s => s.trim()).filter(Boolean),
+                dislikes: document.getElementById('edit-profile-dislikes').value.split(',').map(s => s.trim()).filter(Boolean),
+                tags: window.stateData.profile.tags || [],
+                ddays: window.stateData.profile.ddays || []
+            };
+
+            try {
+                await setDoc(getPublicDoc('settings', 'profile'), newProfile);
+                closeProfileEditModal();
+                showToast("대표 프로필이 저장되었습니다.");
+            } catch (err) {
+                showToast("저장 실패");
+            }
+        };
+
+        // Pledge Save
+        window.savePledgeTextData = async function() {
+            if (!checkAdminAuthGuard()) return;
+            const text = document.getElementById('pledge-textarea').value;
+            try {
+                await setDoc(getPublicDoc('settings', 'pledge'), { text });
+                closeEditPledgeTextModal();
+                showToast("공약 내용이 저장되었습니다.");
+            } catch (err) {
+                showToast("저장 실패");
+            }
+        };
+
+        // Add Homework User
+        window.submitNewUser = async function() {
+            if (!checkAdminAuthGuard()) return;
+            const soopId = document.getElementById('new-user-id').value.trim();
+            const nickname = document.getElementById('new-user-nickname').value.trim();
+
+            if (!nickname) {
+                showToast("닉네임을 입력해주세요.");
+                return;
+            }
+
+            const newDocRef = doc(getPublicCollection('homework'));
+            const userData = {
+                soopId,
+                nickname,
+                items: [
+                    { name: "기본 방셀 작성", done: false },
+                    { name: "음성 메시지 전달", done: false }
+                ]
+            };
+
+            try {
+                await setDoc(newDocRef, userData);
+                closeAddUserModal();
+                document.getElementById('new-user-id').value = '';
+                document.getElementById('new-user-nickname').value = '';
+                showToast("워냥이가 새로 등록되었습니다.");
+            } catch (err) {
+                showToast("등록 실패: 관리자 로그인이 필요합니다.");
+            }
+        };
+
+        // Homework Check Modal Open
+        window.openUpboEditModal = function(userId) {
+            window.activeModalUserId = userId;
+            const user = (window.stateData.homeworkUsers || []).find(u => u.id === userId);
+            if (!user) return;
+
+            const header = document.getElementById('edit-modal-header');
+            header.innerHTML = `
+                <img src="https://stimg.afreecatv.com/LOGO/${user.soopId ? user.soopId.slice(0,2) : 'wh'}/${user.soopId || 'whiteone325'}/${user.soopId || 'whiteone325'}.jpg" onerror="this.src='https://stimg.afreecatv.com/LOGO/wh/whiteone325/whiteone325.jpg'" class="w-10 h-10 rounded-full border border-black object-cover" alt="User">
+                <div>
+                    <h3 class="font-black text-sm text-brand-dark dark:text-white">${user.nickname}</h3>
+                    <span class="text-[10px] text-gray-500 font-bold">@${user.soopId || 'nanwony'}</span>
+                </div>
+            `;
+
+            const delBtn = document.getElementById('delete-user-confirm-btn');
+            if (delBtn) {
+                if (window.isAdmin) {
+                    delBtn.classList.remove('hidden');
+                    delBtn.onclick = () => deleteHomeworkUser(userId);
+                } else {
+                    delBtn.classList.add('hidden');
+                }
+            }
+
+            renderHomeworkChecklistItems(user);
+            openModal('upbo-edit-modal');
+        };
+
+        function renderHomeworkChecklistItems(user) {
+            const body = document.getElementById('edit-modal-body');
+            if (!body) return;
+
+            const items = user.items || [];
+            if (items.length === 0) {
+                body.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">체크할 항목이 없습니다.</p>`;
+                return;
+            }
+
+            body.innerHTML = items.map((item, idx) => `
+                <div class="flex items-center justify-between p-2.5 bg-amber-50 dark:bg-black/40 rounded-xl border border-amber-400/20 text-xs font-bold">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" onchange="toggleHomeworkItem('${user.id}', ${idx})" ${item.done ? 'checked' : ''} ${!window.isAdmin ? 'disabled' : ''} class="w-4 h-4 text-amber-500 rounded focus:ring-amber-400">
+                        <span class="${item.done ? 'line-through text-gray-400' : 'text-brand-dark dark:text-amber-100'}">${item.name}</span>
+                    </div>
+                    ${window.isAdmin ? `<button onclick="removeHomeworkItem('${user.id}', ${idx})" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                </div>
+            `).join('');
         }
 
-        function requestSong(title, artist) {
-            const textToCopy = `!신청 ${title} - ${artist}`;
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = textToCopy;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-            showToast(`"${title}" 신청 양식이 복사되었습니다! 🐾`);
+        window.toggleHomeworkItem = async function(userId, itemIdx) {
+            if (!checkAdminAuthGuard()) return;
+            const user = (window.stateData.homeworkUsers || []).find(u => u.id === userId);
+            if (!user || !user.items) return;
+
+            user.items[itemIdx].done = !user.items[itemIdx].done;
+
+            try {
+                await updateDoc(doc(getPublicCollection('homework'), userId), { items: user.items });
+                renderHomeworkChecklistItems(user);
+            } catch (err) {
+                showToast("업데이트 실패");
+            }
+        };
+
+        window.addNewItem = async function() {
+            if (!checkAdminAuthGuard()) return;
+            const userId = window.activeModalUserId;
+            const input = document.getElementById('new-item-name');
+            const name = input.value.trim();
+            if (!name || !userId) return;
+
+            const user = (window.stateData.homeworkUsers || []).find(u => u.id === userId);
+            if (!user) return;
+
+            const items = user.items || [];
+            items.push({ name, done: false });
+
+            try {
+                await updateDoc(doc(getPublicCollection('homework'), userId), { items });
+                input.value = '';
+                renderHomeworkChecklistItems(user);
+            } catch (err) {
+                showToast("항목 추가 실패");
+            }
+        };
+
+        window.removeHomeworkItem = async function(userId, itemIdx) {
+            if (!checkAdminAuthGuard()) return;
+            const user = (window.stateData.homeworkUsers || []).find(u => u.id === userId);
+            if (!user || !user.items) return;
+
+            user.items.splice(itemIdx, 1);
+            try {
+                await updateDoc(doc(getPublicCollection('homework'), userId), { items: user.items });
+                renderHomeworkChecklistItems(user);
+            } catch (err) {
+                showToast("삭제 실패");
+            }
+        };
+
+        async function deleteHomeworkUser(userId) {
+            if (!checkAdminAuthGuard()) return;
+            if (confirm("이 워냥이 숙제를 삭제하시겠습니까?")) {
+                try {
+                    await deleteDoc(doc(getPublicCollection('homework'), userId));
+                    closeUpboEditModal();
+                    showToast("삭제되었습니다.");
+                } catch (err) {
+                    showToast("삭제 실패");
+                }
+            }
         }
 
-        function openAddSongModal() {
-            const modal = document.getElementById('add-song-modal');
-            document.getElementById('new-song-title').value = '';
-            document.getElementById('new-song-artist').value = '';
-            document.getElementById('new-song-rating').value = '5';
-            requestAnimationFrame(() => { modal.classList.remove('opacity-0', 'pointer-events-none'); modal.querySelector('div').classList.remove('scale-95'); modal.querySelector('div').classList.add('scale-100'); });
-        }
+        window.closeUpboEditModal = () => closeModal('upbo-edit-modal');
 
-        function closeAddSongModal() {
-            const modal = document.getElementById('add-song-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-        }
-
-        function submitNewSong() {
+        // Add Song
+        window.submitNewSong = async function() {
+            if (!checkAdminAuthGuard()) return;
             const genre = document.getElementById('new-song-genre').value;
             const title = document.getElementById('new-song-title').value.trim();
             const artist = document.getElementById('new-song-artist').value.trim();
-            const rating = parseInt(document.getElementById('new-song-rating').value, 10);
-            
-            if (!title || !artist) return;
+            const level = parseInt(document.getElementById('new-song-level').value) || 5;
 
-            globalSongsData.push({ title, artist, genre, rating });
-            updateFirestore('songs', globalSongsData);
-            closeAddSongModal();
-            renderSongList();
-            showToast(`노래책에 "${title}" 신곡이 추가되었습니다! 🎵`);
-        }
+            if (!title) {
+                showToast("제목을 입력해주세요.");
+                return;
+            }
 
-        function deleteSong(index) {
-            globalSongsData.splice(index, 1);
-            updateFirestore('songs', globalSongsData);
-            renderSongList();
-            showToast("곡이 삭제되었습니다.");
-        }
+            try {
+                await setDoc(doc(getPublicCollection('songs')), { genre, title, artist, level });
+                closeAddSongModal();
+                document.getElementById('new-song-title').value = '';
+                document.getElementById('new-song-artist').value = '';
+                showToast("노래가 추가되었습니다!");
+            } catch (err) {
+                showToast("등록 실패");
+            }
+        };
 
-        function openAddAwardModal() {
-            const modal = document.getElementById('add-award-modal');
-            document.getElementById('new-award-year').value = new Date().getFullYear().toString();
-            document.getElementById('new-award-title').value = '';
-            document.getElementById('new-award-desc').value = '';
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modal.querySelector('div').classList.remove('scale-95');
-                modal.querySelector('div').classList.add('scale-100');
-            });
-        }
-
-        function closeAddAwardModal() {
-            const modal = document.getElementById('add-award-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
-        }
-
-        function submitNewAward() {
+        // Add Award
+        window.submitNewAward = async function() {
+            if (!checkAdminAuthGuard()) return;
             const year = document.getElementById('new-award-year').value.trim();
             const title = document.getElementById('new-award-title').value.trim();
             const desc = document.getElementById('new-award-desc').value.trim();
-            if (!year || !title) return;
-            globalAwardsData.unshift({ year, title, desc });
-            updateFirestore('awards', globalAwardsData);
-            closeAddAwardModal();
-            renderAwards();
-            showToast("수상 기록이 등록되었습니다! 🏆");
+
+            if (!title) {
+                showToast("수상 타이틀을 입력해주세요.");
+                return;
+            }
+
+            try {
+                await setDoc(doc(getPublicCollection('awards')), { year, title, desc });
+                closeAddAwardModal();
+                document.getElementById('new-award-year').value = '';
+                document.getElementById('new-award-title').value = '';
+                document.getElementById('new-award-desc').value = '';
+                showToast("수상 기록이 추가되었습니다!");
+            } catch (err) {
+                showToast("등록 실패");
+            }
+        };
+
+        // Auth Helper Guard
+        function checkAdminAuthGuard() {
+            if (!window.isAdmin || !auth.currentUser || auth.currentUser.isAnonymous) {
+                showToast("이 작업은 관리자 로그인 상태에서만 가능합니다.");
+                openAdminLoginModal();
+                return false;
+            }
+            return true;
         }
 
-        function deleteAward(index) {
-            globalAwardsData.splice(index, 1);
-            updateFirestore('awards', globalAwardsData);
-            renderAwards();
-            showToast("수상 기록이 삭제되었습니다.");
-        }
+        // Global UI Controls
+        window.toggleDarkMode = function() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            const themeIcon = document.getElementById('theme-icon');
+            const mobileThemeIcon = document.getElementById('mobile-theme-icon');
 
-        // Window Interface Binders
-        window.drawCatFortune = drawCatFortune;
-        window.handleDirectBannerUpload = handleDirectBannerUpload;
-        window.openAdminLoginModal = openAdminLoginModal;
-        window.closeAdminLoginModal = closeAdminLoginModal;
-        window.checkAdminPin = checkAdminPin;
-        window.openProfileEditModal = openProfileEditModal;
-        window.closeProfileEditModal = closeProfileEditModal;
-        window.saveProfileChanges = saveProfileChanges;
-        window.openNoticeEditModal = openNoticeEditModal;
-        window.closeNoticeEditModal = closeNoticeEditModal;
-        window.addNewNotice = addNewNotice;
-        window.deleteNotice = deleteNotice;
-        window.openScheduleEditModal = openScheduleEditModal;
-        window.closeScheduleEditModal = closeScheduleEditModal;
-        window.saveScheduleChanges = saveScheduleChanges;
-        window.openEditPledgeTextModal = openEditPledgeTextModal;
-        window.closeEditPledgeTextModal = closeEditPledgeTextModal;
-        window.savePledgeTextChanges = savePledgeTextChanges;
-        window.openUpboModal = openUpboModal;
-        window.closeUpboModal = closeUpboModal;
-        window.openUpboEditModal = openUpboEditModal;
-        window.closeUpboEditModal = closeUpboEditModal;
-        window.changeItemCount = changeItemCount;
-        window.deleteItem = deleteItem;
-        window.addNewItem = addNewItem;
-        window.handleDeleteUser = handleDeleteUser;
-        window.openAddUserModal = openAddUserModal;
-        window.closeAddUserModal = closeAddUserModal;
-        window.submitNewUser = submitNewUser;
-        window.filterSongsByGenre = filterSongsByGenre;
-        window.handleSongSearch = handleSongSearch;
-        window.requestSong = requestSong;
-        window.openAddSongModal = openAddSongModal;
-        window.closeAddSongModal = closeAddSongModal;
-        window.submitNewSong = submitNewSong;
-        window.deleteSong = deleteSong;
-        window.openAddAwardModal = openAddAwardModal;
-        window.closeAddAwardModal = closeAddAwardModal;
-        window.submitNewAward = submitNewAward;
-        window.deleteAward = deleteAward;
-        window.openSectionToggleModal = openSectionToggleModal;
-        window.closeSectionToggleModal = closeSectionToggleModal;
-        window.saveSectionVisibility = saveSectionVisibility;
+            if (isDark) {
+                if (themeIcon) themeIcon.className = "fa-solid fa-sun text-base w-5 h-5 flex items-center justify-center";
+                if (mobileThemeIcon) mobileThemeIcon.className = "fa-solid fa-sun text-lg w-5 h-5 flex items-center justify-center";
+            } else {
+                if (themeIcon) themeIcon.className = "fa-solid fa-moon text-base w-5 h-5 flex items-center justify-center";
+                if (mobileThemeIcon) mobileThemeIcon.className = "fa-solid fa-moon text-lg w-5 h-5 flex items-center justify-center";
+            }
+        };
+
+        window.toggleMobileMenu = function() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        };
+
+        window.closeMobileMenu = function() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.add('hidden');
+        };
+
+        window.showToast = function(msg) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-msg');
+            if (toast && msgEl) {
+                msgEl.innerText = msg;
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            }
+        };
+
+        // Initialize Application
+        window.onload = function() {
+            renderProfile();
+            renderNotices();
+            renderSchedules();
+            renderPledge();
+            renderHomeworkGrid();
+            renderSongList();
+            renderAwardsList();
+            initFirestoreListeners();
+        };
     </script>
 </body>
 </html>
