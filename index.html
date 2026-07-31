@@ -13,7 +13,7 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght=500;600;700&family=Gowun+Dodum&family=Gaegu:wght=400;700&family=Noto+Sans+KR:wght=300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Gowun+Dodum&family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -27,11 +27,11 @@
                     },
                     colors: {
                         brand: {
-                            light: '#fef9c3', // 부드러운 파스텔 옐로우
-                            DEFAULT: '#eab308', // 메인 비비드 옐로우
-                            dark: '#0f0f12',  // 매트 블랙 / 미드나이트 오닉스
-                            hover: '#ca8a04', // 딥 엠버 옐로우
-                            cardBg: '#18181c' // 다크모드 카드용 매트 차콜
+                            light: '#fef9c3',
+                            DEFAULT: '#eab308',
+                            dark: '#0f0f12',
+                            hover: '#ca8a04',
+                            cardBg: '#18181c'
                         },
                         cat: {
                             light: '#fffbeb',
@@ -48,14 +48,12 @@
     <style>
         html { scroll-behavior: smooth; }
         
-        /* 옐로우 & 블랙 커스텀 스크롤바 */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #121215; }
         .dark ::-webkit-scrollbar-track { background: #0a0a0c; }
         ::-webkit-scrollbar-thumb { background: #facc15; border-radius: 9999px; border: 2px solid #121215; }
         .dark ::-webkit-scrollbar-thumb { background: #eab308; border: 2px solid #0a0a0c; }
 
-        /* 고양이 바운스 애니메이션 */
         @keyframes catBounce {
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-7px) rotate(-3deg); }
@@ -64,7 +62,6 @@
             animation: catBounce 2.2s infinite ease-in-out;
         }
 
-        /* 발바닥 펄스 애니메이션 */
         @keyframes pawPulse {
             0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(250,204,21,0.6)); }
             50% { transform: scale(1.15); filter: drop-shadow(0 0 10px rgba(234,179,8,0.9)); }
@@ -73,7 +70,6 @@
             animation: pawPulse 1.5s infinite ease-in-out;
         }
 
-        /* 떨어지는 발바닥/별 입자 */
         .sparkle-particle {
             position: absolute;
             pointer-events: none;
@@ -84,7 +80,6 @@
             100% { transform: translateY(105vh) translateX(40px) rotate(360deg); opacity: 0; }
         }
 
-        /* 스크롤바 숨기기 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -115,17 +110,14 @@
                     <a id="nav-link-songlist" href="#songlist" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">노래책</a>
                     <a id="nav-link-awards" href="#awards" class="text-brand-dark dark:text-amber-200 hover:text-amber-500 px-2 py-1.5 rounded-xl transition-all hover:bg-amber-400/10 whitespace-nowrap">수상내역</a>
                     
-                    <!-- Admin Section Toggle Button -->
                     <button id="admin-section-toggle-btn" onclick="openSectionToggleModal()" class="hidden bg-amber-400 hover:bg-amber-500 text-black px-2.5 py-1.5 rounded-xl transition-all font-black text-xs shadow-sm" title="섹션 ON/OFF 설정">
                         ⚙️ ON/OFF
                     </button>
 
-                    <!-- Top Right Admin Login Button -->
                     <button id="top-admin-login-btn" onclick="openAdminLoginModal()" class="bg-amber-100 dark:bg-brand-cardBg hover:bg-amber-200 dark:hover:bg-amber-400/20 text-brand-dark dark:text-amber-300 border border-amber-400/50 px-2.5 py-1.5 rounded-xl transition-all font-black text-xs shadow-sm flex items-center gap-1" title="관리자 인증">
                         <span class="text-sm">🐱</span> <span id="top-admin-btn-text">관리자</span>
                     </button>
 
-                    <!-- Theme toggler -->
                     <button id="theme-toggle" class="text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 p-2 rounded-xl transition-colors">
                         <i class="fa-solid fa-moon text-base w-5 h-5 flex items-center justify-center"></i>
                     </button>
@@ -170,17 +162,14 @@
         <!-- 1. Profile Section -->
         <section id="profile" class="scroll-mt-20 flex flex-col gap-6">
             
-            <!-- Hero Header Card -->
             <div class="bg-white dark:bg-brand-dark border-4 border-black dark:border-amber-400/60 rounded-3xl shadow-[8px_8px_0px_0px_rgba(250,204,21,0.5)] dark:shadow-[8px_8px_0px_0px_rgba(15,15,18,1)] overflow-hidden transition-all duration-300 relative">
                 
-                <!-- Cover Banner with Yellow & Black Gradation -->
                 <div class="h-40 sm:h-56 w-full relative overflow-hidden bg-gradient-to-r from-black via-amber-950 to-amber-500 group">
                     <img id="profile-banner-img" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop" 
                          onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop'" 
                          class="w-full h-full object-cover absolute inset-0 opacity-80 transition-opacity duration-300" alt="난워니 배너">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
                     
-                    <!-- Direct Banner Picture File Upload Button (Admin Mode Only) -->
                     <div id="admin-banner-upload-container" class="hidden absolute top-3 right-3 z-20">
                         <label for="direct-banner-upload" class="cursor-pointer inline-flex items-center gap-1.5 bg-black/70 hover:bg-amber-400 hover:text-black text-amber-300 text-xs font-black px-3 py-2 rounded-xl border-2 border-amber-400 backdrop-blur-md transition-all shadow-md">
                             <i class="fa-solid fa-camera text-sm"></i>
@@ -191,7 +180,6 @@
                 </div>
                 
                 <div class="px-6 sm:px-8 pb-6 flex flex-col sm:flex-row relative">
-                    <!-- Avatar Area -->
                     <div class="-mt-20 sm:-mt-24 mb-4 sm:mb-0 sm:mr-6 flex-shrink-0 flex justify-center sm:block relative z-10">
                         <img id="profile-avatar-img" class="h-32 w-32 sm:h-40 sm:w-40 rounded-full border-4 border-black dark:border-amber-400 shadow-xl object-cover bg-amber-100 dark:bg-black/80 hover:scale-105 transition-transform duration-300" 
                              src="https://stimg.afreecatv.com/LOGO/wh/whiteone325/whiteone325.jpg" 
@@ -199,7 +187,6 @@
                              alt="난워니 아바타">
                     </div>
                     
-                    <!-- Main Profile Details -->
                     <div class="pt-2 sm:pt-4 flex-grow text-center sm:text-left flex flex-col sm:justify-between">
                         <div>
                             <div class="flex items-center justify-center sm:justify-start gap-1.5 mb-2">
@@ -211,7 +198,6 @@
                                 <span class="text-lg text-amber-500 dark:text-amber-400 font-sans font-bold">Nanwony 🐾</span>
                             </h1>
                             
-                            <!-- Key Metadata Tags -->
                             <div class="flex flex-wrap justify-center sm:justify-start gap-1.5 mb-5 text-xs font-bold">
                                 <span class="px-3 py-1 bg-amber-100/80 dark:bg-brand-cardBg text-brand-dark dark:text-amber-300 rounded-lg border border-amber-400/30">🎂 생일: 3월 25일</span>
                                 <span class="px-3 py-1 bg-amber-100/80 dark:bg-brand-cardBg text-brand-dark dark:text-amber-300 rounded-lg border border-amber-400/30">🎄 데뷔일: 12월 24일</span>
@@ -219,7 +205,6 @@
                             </div>
                         </div>
 
-                        <!-- Social Integration Links (Bottom) -->
                         <div class="flex justify-center sm:justify-start gap-3 flex-wrap">
                             <a id="profile-soop-link" href="https://www.sooplive.com/station/whiteone325" target="_blank" 
                                class="w-11 h-11 rounded-xl bg-[#1aa7ec] border-2 border-black text-white flex items-center justify-center hover:scale-110 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" title="SOOP 방송국 📺">
@@ -242,9 +227,7 @@
                 </div>
             </div>
 
-            <!-- Two Column Intro & Anniversary Grid -->
             <div id="intro-dday-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Introduction Card -->
                 <div id="card-profile-intro" class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 transition-colors duration-300 flex flex-col justify-between border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)]">
                     <div>
                         <div class="flex items-center justify-between mb-3">
@@ -260,7 +243,6 @@
                     <div id="profile-tags-container" class="flex flex-wrap gap-1.5 pt-3 border-t border-amber-400/20"></div>
                 </div>
 
-                <!-- Anniversary Card -->
                 <div id="card-profile-dday" class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 transition-colors duration-300 flex flex-col justify-between border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)]">
                     <div>
                         <h3 class="flex items-center gap-2 text-lg font-bold text-brand-dark dark:text-white mb-4">
@@ -271,7 +253,6 @@
                 </div>
             </div>
 
-            <!-- Broadcast Outline Info -->
             <div id="card-profile-broadcast" class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)] transition-colors">
                 <h3 class="flex items-center gap-2 text-lg font-bold text-brand-dark dark:text-white mb-4">
                     📻 LIVE ON AIR INFO
@@ -294,7 +275,6 @@
                 </div>
             </div>
 
-            <!-- Likes & Dislikes -->
             <div id="card-profile-likes" class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 border-2 border-black dark:border-amber-400/40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,204,21,0.2)] transition-colors">
                 <h3 class="flex items-center gap-2 text-lg font-bold text-brand-dark dark:text-white mb-4">
                     💛 LOVE & HATE LIST
@@ -314,7 +294,6 @@
 
         <!-- 2. Notice & Schedule Row -->
         <div id="notice-schedule-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Notice Section -->
             <section id="notice" class="scroll-mt-20">
                 <div class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 h-full border-2 border-black dark:border-amber-400/40 shadow-[6px_6px_0px_0px_rgba(250,204,21,0.4)] dark:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-colors duration-300 flex flex-col relative">
                     <div class="flex items-center justify-between mb-4 border-b border-amber-400/20 pb-3">
@@ -330,7 +309,6 @@
                 </div>
             </section>
 
-            <!-- Weekly Schedule Section -->
             <section id="schedule" class="scroll-mt-20">
                 <div class="bg-white dark:bg-brand-cardBg rounded-2xl p-6 h-full border-2 border-black dark:border-amber-400/40 shadow-[6px_6px_0px_0px_rgba(250,204,21,0.4)] dark:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-colors duration-300 flex flex-col relative">
                     <div class="flex items-center justify-between mb-4 border-b border-amber-400/20 pb-3">
@@ -408,7 +386,6 @@
                     </div>
                 </div>
 
-                <!-- Search and Manage Controls -->
                 <div class="flex flex-col sm:flex-row gap-3 mb-6">
                     <div class="relative flex-grow">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -421,7 +398,6 @@
                     </button>
                 </div>
 
-                <!-- Dynamic Grid for Users -->
                 <div id="upbo-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
             </div>
         </section>
@@ -505,9 +481,7 @@
                 </div>
                 <p class="text-xs text-gray-500 dark:text-amber-200 mb-4 font-bold">원하는 메뉴 및 화면 섹션의 표시 여부를 켜고 끌 수 있습니다.</p>
                 
-                <div class="space-y-3 overflow-y-auto flex-grow p-1 font-bold text-xs" id="section-toggle-list">
-                    <!-- Dynamic Toggle Items Injected via JS -->
-                </div>
+                <div class="space-y-3 overflow-y-auto flex-grow p-1 font-bold text-xs" id="section-toggle-list"></div>
 
                 <div class="mt-5 pt-3 border-t-2 border-black dark:border-amber-400 flex justify-end gap-2 text-xs font-black">
                     <button onclick="closeSectionToggleModal()" class="px-4 py-2.5 rounded-xl bg-gray-200 dark:bg-brand-dark text-gray-700 dark:text-amber-200 hover:bg-gray-300">취소</button>
@@ -762,8 +736,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Setup & Initialization
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanwony-profile-app';
@@ -781,20 +755,8 @@
         const auth = getAuth(app);
 
         const getDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'nanwony-site-data', 'main');
-
-        async function authenticate() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                return true;
-            } catch (error) {
-                console.warn("Auth deferred:", error.message);
-                return false;
-            }
-        }
+        
+        let unsubscribeFirestore = null;
 
         const defaultSectionVisibility = {
             intro: true,
@@ -878,7 +840,6 @@
         let deleteConfirmState = false;
         let currentSelectedGenre = '전체';
 
-        // Helper Utilities
         function safeGetStorage(key, defaultValue) {
             try {
                 const item = window.localStorage.getItem(key);
@@ -887,64 +848,71 @@
                 return defaultValue;
             }
         }
+
         function safeSetStorage(key, value) {
             try {
                 window.localStorage.setItem(key, JSON.stringify(value));
             } catch (e) {}
         }
 
-        async function fetchSiteData() {
+        function setupRealtimeFirestore() {
+            if (!db) return;
             const loadingInd = document.getElementById('loading-indicator');
             if (loadingInd) loadingInd.classList.remove('hidden');
 
-            const isAuthed = await authenticate();
-            
-            if (isAuthed && navigator.onLine) {
-                try {
-                    const docRef = getDocRef();
-                    const docSnap = await getDoc(docRef);
+            const docRef = getDocRef();
+            if (unsubscribeFirestore) unsubscribeFirestore();
 
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        globalUpboData = data.upbo || defaultUpboData;
-                        globalNoticeData = data.notice || defaultNoticeData;
-                        globalScheduleData = data.schedule || defaultScheduleData;
-                        globalProfileData = data.profile || defaultProfileData;
-                        if (!globalProfileData.sectionVisibility) {
-                            globalProfileData.sectionVisibility = defaultSectionVisibility;
-                        }
-                        globalSongsData = data.songs || defaultSongsData;
-                        globalPledgeText = data.pledgeText || defaultPledgeText;
-                        globalAwardsData = data.awards || defaultAwardsData;
-
-                        safeSetStorage('nanwonyUpbo', globalUpboData);
-                        safeSetStorage('nanwonyNotice', globalNoticeData);
-                        safeSetStorage('nanwonySchedule', globalScheduleData);
-                        safeSetStorage('nanwonyProfile', globalProfileData);
-                        safeSetStorage('nanwonySongs', globalSongsData);
-                        safeSetStorage('nanwonyPledgeText', globalPledgeText);
-                        safeSetStorage('nanwonyAwards', globalAwardsData);
-                    } else {
-                        const initialPayload = {
-                            upbo: defaultUpboData,
-                            notice: defaultNoticeData,
-                            schedule: defaultScheduleData,
-                            profile: defaultProfileData,
-                            songs: defaultSongsData,
-                            pledgeText: defaultPledgeText,
-                            awards: defaultAwardsData
-                        };
-                        await setDoc(docRef, initialPayload);
-                        fallbackToDefault();
+            unsubscribeFirestore = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    globalUpboData = data.upbo || defaultUpboData;
+                    globalNoticeData = data.notice || defaultNoticeData;
+                    globalScheduleData = data.schedule || defaultScheduleData;
+                    globalProfileData = data.profile || defaultProfileData;
+                    if (!globalProfileData.sectionVisibility) {
+                        globalProfileData.sectionVisibility = defaultSectionVisibility;
                     }
-                } catch (error) {
-                    console.warn("Firestore sync fallback to local:", error.message);
-                    fallbackToLocal();
+                    globalSongsData = data.songs || defaultSongsData;
+                    globalPledgeText = data.pledgeText || defaultPledgeText;
+                    globalAwardsData = data.awards || defaultAwardsData;
+
+                    safeSetStorage('nanwonyUpbo', globalUpboData);
+                    safeSetStorage('nanwonyNotice', globalNoticeData);
+                    safeSetStorage('nanwonySchedule', globalScheduleData);
+                    safeSetStorage('nanwonyProfile', globalProfileData);
+                    safeSetStorage('nanwonySongs', globalSongsData);
+                    safeSetStorage('nanwonyPledgeText', globalPledgeText);
+                    safeSetStorage('nanwonyAwards', globalAwardsData);
+
+                    renderAll();
+                } else {
+                    saveAllToFirestore();
                 }
-            } else {
+                if (loadingInd) loadingInd.classList.add('hidden');
+            }, (error) => {
+                console.warn("Realtime Sync Warning:", error.message);
                 fallbackToLocal();
+                if (loadingInd) loadingInd.classList.add('hidden');
+            });
+        }
+
+        async function saveAllToFirestore() {
+            if (!db) return;
+            try {
+                const docRef = getDocRef();
+                await setDoc(docRef, {
+                    upbo: globalUpboData,
+                    notice: globalNoticeData,
+                    schedule: globalScheduleData,
+                    profile: globalProfileData,
+                    songs: globalSongsData,
+                    pledgeText: globalPledgeText,
+                    awards: globalAwardsData
+                }, { merge: true });
+            } catch (e) {
+                console.warn("Save initial state fail:", e.message);
             }
-            if (loadingInd) loadingInd.classList.add('hidden');
         }
 
         function fallbackToDefault() {
@@ -972,21 +940,31 @@
 
         async function updateFirestore(key, data) {
             safeSetStorage(`nanwony${key.charAt(0).toUpperCase() + key.slice(1)}`, data);
-            if (!auth.currentUser) return;
-            if (navigator.onLine) {
+            
+            if (db) {
                 try {
                     const docRef = getDocRef();
-                    await updateDoc(docRef, { [key]: data });
+                    await setDoc(docRef, { [key]: data }, { merge: true });
                 } catch (error) {
                     console.warn("Firestore update error:", error.message);
                 }
             }
         }
 
+        function renderAll() {
+            renderProfile();
+            renderUpbo(globalUpboData);
+            renderNotice();
+            renderSchedule();
+            renderPledgeText();
+            renderSongList();
+            renderAwards();
+            applySectionVisibility();
+        }
+
         function applySectionVisibility() {
             const visibility = globalProfileData.sectionVisibility || defaultSectionVisibility;
 
-            // 1. Profile sub-cards
             const cardIntro = document.getElementById('card-profile-intro');
             if (cardIntro) cardIntro.classList.toggle('hidden', !visibility.intro);
 
@@ -1004,7 +982,6 @@
             const cardLikes = document.getElementById('card-profile-likes');
             if (cardLikes) cardLikes.classList.toggle('hidden', !visibility.likes);
 
-            // 2. Main sections & Navigation links
             const sectionNotice = document.getElementById('notice');
             if (sectionNotice) sectionNotice.classList.toggle('hidden', !visibility.notice);
             document.getElementById('nav-link-notice')?.classList.toggle('hidden', !visibility.notice);
@@ -1109,7 +1086,7 @@
             showToast("화면 섹션 표시 설정이 반영되었습니다! ⚙️");
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             generateBgGlitter();
 
             const themeToggleBtns = [document.getElementById('theme-toggle'), document.getElementById('mobile-theme-toggle')];
@@ -1168,16 +1145,9 @@
                 });
             }
 
-            await fetchSiteData();
-            
-            renderProfile();
-            renderUpbo(globalUpboData);
-            renderNotice();
-            renderSchedule();
-            renderPledgeText();
-            renderSongList();
-            renderAwards();
-            applySectionVisibility();
+            fallbackToLocal();
+            renderAll();
+            setupRealtimeFirestore();
         });
 
         function generateBgGlitter() {
