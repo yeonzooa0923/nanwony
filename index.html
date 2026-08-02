@@ -470,6 +470,7 @@
             </div>
         </section>
 
+        <!-- Modals -->
         <!-- Section Toggle ON/OFF Modal -->
         <div id="section-toggle-modal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
             <div class="bg-white dark:bg-brand-cardBg rounded-3xl shadow-2xl w-11/12 max-w-md p-6 transform scale-95 transition-transform duration-300 border-4 border-black dark:border-amber-400 flex flex-col max-h-[85vh]">
@@ -736,12 +737,12 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Setup & Initialization
+        // Dynamic Firebase & App Config initialization with fallback
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'nanwony-profile-app';
-        const firebaseConfig = {
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyDdIZXL1MFrWHnYhZoySg7OXmyrCwmo7GA",
             authDomain: "nanwony-db.firebaseapp.com",
             projectId: "nanwony-db",
@@ -754,6 +755,10 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        let currentUser = null;
+        let isAuthReady = false;
+
+        // RULE 1 compliant path: /artifacts/{appId}/public/data/nanwony-site-data/main
         const getDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'nanwony-site-data', 'main');
         
         let unsubscribeFirestore = null;
@@ -855,8 +860,29 @@
             } catch (e) {}
         }
 
+        async function initializeAuthAndSync() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    isAuthReady = true;
+                    setupRealtimeFirestore();
+                } else {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (err) {
+                        console.warn("Auth retry via anonymous:", err);
+                        try { await signInAnonymously(auth); } catch (e) {}
+                    }
+                }
+            });
+        }
+
         function setupRealtimeFirestore() {
-            if (!db) return;
+            if (!db || !currentUser) return;
             const loadingInd = document.getElementById('loading-indicator');
             if (loadingInd) loadingInd.classList.remove('hidden');
 
@@ -898,7 +924,7 @@
         }
 
         async function saveAllToFirestore() {
-            if (!db) return;
+            if (!db || !currentUser) return;
             try {
                 const docRef = getDocRef();
                 await setDoc(docRef, {
@@ -941,13 +967,17 @@
         async function updateFirestore(key, data) {
             safeSetStorage(`nanwony${key.charAt(0).toUpperCase() + key.slice(1)}`, data);
             
-            if (db) {
+            if (db && currentUser) {
                 try {
                     const docRef = getDocRef();
                     await setDoc(docRef, { [key]: data }, { merge: true });
+                    showToast("변경사항이 성공적으로 저장되었습니다! 💾");
                 } catch (error) {
-                    console.warn("Firestore update error:", error.message);
+                    console.error("Firestore update error:", error.message);
+                    showToast(`저장 로컬 보관 완료 (클라우드 오류: ${error.message})`);
                 }
+            } else {
+                showToast("로컬 저장 완료! 🐾");
             }
         }
 
@@ -1083,7 +1113,6 @@
             updateFirestore('profile', globalProfileData);
             applySectionVisibility();
             closeSectionToggleModal();
-            showToast("화면 섹션 표시 설정이 반영되었습니다! ⚙️");
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1147,7 +1176,7 @@
 
             fallbackToLocal();
             renderAll();
-            setupRealtimeFirestore();
+            initializeAuthAndSync();
         });
 
         function generateBgGlitter() {
@@ -1675,15 +1704,15 @@
             if (!file) return;
             showToast("배너 이미지 가공 및 등록 중... 📸");
             try {
-                const compressedBase64 = await compressImage(file, 1200, 400, 0.85);
+                // Compress image to keep base64 within Firestore payload limits (<500KB)
+                const compressedBase64 = await compressImage(file, 900, 300, 0.7);
                 globalProfileData.bannerUrl = compressedBase64;
                 const bannerImg = document.getElementById('profile-banner-img');
                 if (bannerImg) bannerImg.src = compressedBase64;
                 await updateFirestore('profile', globalProfileData);
-                showToast("배너 사진 직접 업로드 성공! 🎨");
             } catch (err) {
                 console.error("배너 업로드 에러:", err);
-                showToast("배너 업로드 실패 😥");
+                showToast("배너 업로드 실패 😥 (용량이 커요)");
             }
         }
 
@@ -1731,7 +1760,6 @@
             updateFirestore('profile', globalProfileData);
             renderProfile();
             closeProfileEditModal();
-            showToast("대표 프로필이 수정되었습니다! 🐾");
         }
 
         function openNoticeEditModal() {
@@ -1848,7 +1876,6 @@
             updateFirestore('schedule', globalScheduleData);
             renderSchedule();
             closeScheduleEditModal();
-            showToast("주간 일정이 저장되었습니다! 📅");
         }
 
         function openEditPledgeTextModal() {
@@ -1874,7 +1901,6 @@
             updateFirestore('pledgeText', globalPledgeText);
             renderPledgeText();
             closeEditPledgeTextModal();
-            showToast("API 공약 내용이 수정되었습니다! 📜");
         }
 
         function openUpboModal(user) {
@@ -1997,7 +2023,6 @@
             updateFirestore('upbo', globalUpboData);
             closeUpboEditModal();
             renderUpbo(globalUpboData);
-            showToast("워냥이가 목록에서 삭제되었습니다.");
         }
 
         function openAddUserModal() {
@@ -2023,7 +2048,6 @@
             updateFirestore('upbo', globalUpboData);
             closeAddUserModal();
             renderUpbo(globalUpboData);
-            showToast(`새 워냥이 "${nickInput}" 님이 등록되었습니다! 🐾`);
         }
 
         function filterSongsByGenre(genre) {
@@ -2081,14 +2105,12 @@
             updateFirestore('songs', globalSongsData);
             closeAddSongModal();
             renderSongList();
-            showToast(`노래책에 "${title}" 신곡이 추가되었습니다! 🎵`);
         }
 
         function deleteSong(index) {
             globalSongsData.splice(index, 1);
             updateFirestore('songs', globalSongsData);
             renderSongList();
-            showToast("곡이 삭제되었습니다.");
         }
 
         function openAddAwardModal() {
@@ -2119,17 +2141,15 @@
             updateFirestore('awards', globalAwardsData);
             closeAddAwardModal();
             renderAwards();
-            showToast("수상 기록이 등록되었습니다! 🏆");
         }
 
         function deleteAward(index) {
             globalAwardsData.splice(index, 1);
             updateFirestore('awards', globalAwardsData);
             renderAwards();
-            showToast("수상 기록이 삭제되었습니다.");
         }
 
-        // Window Interface Binders
+        // Expose function handlers to global scope
         window.drawCatFortune = drawCatFortune;
         window.handleDirectBannerUpload = handleDirectBannerUpload;
         window.openAdminLoginModal = openAdminLoginModal;
